@@ -17,7 +17,7 @@ maxerr: 50, node: true */
      */
     function cmdGetCompletion(data, setpy, cb) {
         var stdout = '', stderr = '';
-        var child = cp.spawn(setpy, ['.config/Brackets/extensions/user/python-jedi-brackets/python3_jedi.py', data]);
+        var child = cp.spawn(setpy, ['.config/Brackets/extensions/user/saravanan.python-jedi-brackets/python3_jedi.py', data]);
         child.stdout.on("data", function (data) {
             stdout = data.toString();
         });
