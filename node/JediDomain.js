@@ -15,9 +15,9 @@ maxerr: 50, node: true */
      * @param {boolean} total If true, return total memory; if false, return free memory only.
      * @return {number} The amount of memory.
      */
-    function cmdGetCompletion(data, setpy, cb) {
+    function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
         var stdout = '', stderr = '';
-        var child = cp.spawn(setpy, ['.config/Brackets/extensions/user/saravanan.python-jedi-brackets/python3_jedi.py', data]);
+        var child = cp.spawn(setpy, [pythonjediPath, data]);
         child.stdout.on("data", function (data) {
             stdout = data.toString();
         });
