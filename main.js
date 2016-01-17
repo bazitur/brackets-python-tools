@@ -31,6 +31,8 @@ define(function (require, exports, module) {
     
     var jedidomain = new NodeDomain("python-jedi", ExtensionUtils.getModulePath(module, "node/JediDomain"));
     
+    var pythonjediPath = ExtensionUtils.getModulePath(module, 'python3_jedi.py');
+    
     KeyBindingManager.addBinding(GOTO, gotoKey);
 
     /**
@@ -90,7 +92,7 @@ define(function (require, exports, module) {
             var deferred = new $.Deferred();
             var path = prefs.get('path_to_python');
             var setpy = path === '' ? "python3" : path;
-            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy)
+            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath)
                     .done(function (result) {
 
                     var hintList = JSON.parse(result);
@@ -152,7 +154,7 @@ define(function (require, exports, module) {
         if (extension === "py") {
             var path = prefs.get('path_to_python');
             var setpy = path === '' ? "python3" : path;
-            jedidomain.exec("getCompletion", JSON.stringify(data), setpy)
+            jedidomain.exec("getCompletion", JSON.stringify(data), setpy, pythonjediPath)
                 .done(function (result) {
                     var fileInfo = JSON.parse(result)[0];
                     if (fileInfo !== undefined && !fileInfo.is_built_in) {
