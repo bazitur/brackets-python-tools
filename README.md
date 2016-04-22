@@ -1,6 +1,6 @@
 # Python-Jedi-Brackets extension
 
-Autocompletiton and gotodefinition for python using tool jedi.
+Autocompletiton and gotodefinition for python using tool jedi(https://github.com/davidhalter/jedi).
 
 ## Features
   - Autocomplete.
