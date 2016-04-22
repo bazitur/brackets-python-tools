@@ -57,7 +57,7 @@ define(function (require, exports, module) {
         var end = start;
         
         while (start >= 0) {
-            if ((/[\s.()\[\]{}=\-_@!$%\^&\?'"\/|\\`~;:<>,*+]/g).test(line[start - 1])) {
+            if ((/[\s.()\[\]{}=\-@!$%\^&\?'"\/|\\`~;:<>,*+]/g).test(line[start - 1])) {
                 break;
             } else {
                 start--;
