@@ -3,7 +3,7 @@
     "title": "Python Jedi Brackets",
     "description": "Auto-Completiton and Goto-Definition for python using tool jedi. Use Ctrl-Alt-J for gotodefinition",
     "homepage": "https://github.com/saravanan-k90/python-jedi-brackets",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "author": "K.Saravanan <blackcombmagi45@gmail.com> (http://saravanank.site90.net/)",
     "license": "MIT",
     "engines": {
