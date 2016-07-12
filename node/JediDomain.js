@@ -18,8 +18,14 @@ maxerr: 50, node: true */
     function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
         var stdout = '', stderr = '';
         var child = cp.spawn(setpy, [pythonjediPath, data]);
+        var chunks = [];
         child.stdout.on("data", function (data) {
-            stdout = data.toString();
+            chunks.push(data);
+        });
+        
+        child.stdout.on("end", function () {
+            chunks = Buffer.concat(chunks);
+            stdout = String(chunks);
         });
         
         child.stderr.on("data", function (error) {
