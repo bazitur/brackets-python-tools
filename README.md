@@ -22,7 +22,11 @@ For python2 autocomplete go to View->Python Jedi Settings-> Enter python path. (
   - Use the keyboard shortcut `ctrl-alt-j`.
 
 ### Note
-- Enter Correct Python path., otherwise autocompletion won't work.
+  - Enter Correct Python path., otherwise autocompletion won't work.
 
-- The Extension is tested only in linux environment. The package has not been tested under windows environment or mac. It might
+  - The Extension is tested only in linux environment. The package has not been tested under windows environment or mac. It might
 be buggy.
+
+### Links
+  - Jedi library api reference [Jedi](http://jedi.readthedocs.io/en/latest/index.html).
+  - Regular expressions testing and debugging using [regex101](https://regex101.com).
