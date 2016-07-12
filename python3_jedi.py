@@ -27,7 +27,12 @@ def completions(source, line, column, path):
 
     try:
         for completion in script.completions():
-            completions.append(completion.name)
+            completions.append({
+                "complete": completion.complete,
+                "name": completion.name,
+                "type": completion.type,
+                "description": completion.description,
+                "docstring": completion.docstring(raw=False, fast=True)})
 
         return completions
     except:
