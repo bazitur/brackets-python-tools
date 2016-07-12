@@ -94,14 +94,42 @@ define(function (require, exports, module) {
             var setpy = path === '' ? "python3" : path;
             jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath)
                     .done(function (result) {
-
+                
                     var hintList = JSON.parse(result);
 
                     var query = getQuery.call(this, 'query');
-//                    console.log(query);
+                
+                    var $hintArray = [];
+                    
+                    if (hintList.length !== 0) {
+                        var i;
+                        for (i = 0; i < hintList.length; i++) {
+                            var matchHint = new RegExp("^" + query, "i");
+                            var $fhint = $('<span>').addClass('python-jedi-hints');
+                            
+                            var match_hint = $("<span>").addClass('matched-hint').text(hintList[i].name.slice(0, query.length));
+                            $fhint.append(match_hint).append(hintList[i].complete);
+                            var circle_icon = $('<span>' + hintList[i].type[0] + '</span>').addClass("docstring");
+                            
+                            if (hintList[i].docstring.length !== 0) {
+//                                $('<span>ds</span>').appendTo($fhint).attr('title', hintList[i].docstring).addClass("docstring");
+//                                $fhint.attr("title", hintList[i].docstring);
+                                circle_icon.attr('title', hintList[i].docstring);
+                            }
+                            circle_icon.appendTo($fhint).attr('title', hintList[i].docstring);
+                            $fhint.data = hintList[i].name;
+
+                            if (hintList[i].description.length !== 0) {
+                                $('<span>' + hintList[i].description + '</span>').appendTo($fhint).addClass("description");
+                            }
+
+                            $hintArray.push($fhint);
+                        }
+                    }
+
                     var resolve_obj = {
-                        hints: hintList,
-                        match: query,
+                        hints: $hintArray,
+                        match: null,
                         selectInitial: true,
                         handleWideResults: false
                     };
@@ -130,6 +158,7 @@ define(function (require, exports, module) {
     };
     
     PyHints.prototype.insertHint = function (hint) {
+        hint = hint.data;
         var currentDoc = DocumentManager.getCurrentDocument();
         var word = getQuery.call(this, 'wordObj');
         currentDoc.replaceRange(hint, word.start, word.end);
@@ -204,6 +233,7 @@ define(function (require, exports, module) {
         menu.addMenuDivider();
         menu.addMenuItem(MY_COMMAND_ID);
         menu.addMenuDivider();
+        ExtensionUtils.loadStyleSheet(module, "styles/python-jedi-hints.css");
     });
     
 });
