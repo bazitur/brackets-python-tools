@@ -8,17 +8,13 @@ maxerr: 50, node: true */
 //    var _domainManager = null;
     
     var cp = require("child_process");
-    
-    /**
-     * @private
-     * Handler function for the simple.getMemory command.
-     * @param {boolean} total If true, return total memory; if false, return free memory only.
-     * @return {number} The amount of memory.
-     */
+
     function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
-        var stdout = '', stderr = '';
-        var child = cp.spawn(setpy, [pythonjediPath, data]);
+        var stdout = '',
+            stderr = '';
+        var child = cp.spawn(setpy, [pythonjediPath, data]); // create child process
         var chunks = [];
+
         child.stdout.on("data", function (data) {
             chunks.push(data);
         });
@@ -33,7 +29,6 @@ maxerr: 50, node: true */
         });
            
         child.on("close", function (code) {
-//            console.log(code);
             if (code > 0) {
                 console.log(code);
                 cb(stderr, null);
@@ -47,19 +42,17 @@ maxerr: 50, node: true */
      * @param {DomainManager} domainManager The DomainManager for the server
      */
     function init(domainManager) {
-//        _domainManager = domainManager;
         if (!domainManager.hasDomain("python-jedi")) {
             domainManager.registerDomain("python-jedi", {major: 0, minor: 1});
         }
         domainManager.registerCommand(
             "python-jedi",       // domain name
-            "getCompletion",    // command name
-            cmdGetCompletion,   // command handler function
-            true         // this command is asynchronous in Node
+            "getCompletion",     // command name
+            cmdGetCompletion,    // command handler function
+            true                 // this command is asynchronous in Node
         );
     }
     
     exports.init = init;
     
 }());
-        

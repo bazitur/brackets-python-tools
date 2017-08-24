@@ -5,11 +5,11 @@ import sys
 def main(read):
     read = json.loads(read)
 
-    if read["type"] == "goto":
+    if read["type"] == "goto":      # GOTO definition, probably?
         payload = goto_def(read["source"], read["line"], read["column"], read["path"])
         payload = json.dumps(payload)
 
-    else:
+    else:                           # Autocomplete?
         payload = completions(read["source"], read["line"], read["column"], read["path"])
         payload = json.dumps(payload)
     
@@ -28,12 +28,12 @@ def completions(source, line, column, path):
     try:
         for completion in script.completions():
             completions.append({
-                "complete": completion.complete,
-                "name": completion.name,
-                "type": completion.type,
-                "description": completion.description,
-                "docstring": completion.docstring(raw=False, fast=True)})
-
+                "complete":    completion.complete,    # completion
+                "name":        completion.name,        # full name?
+                "type":        completion.type,        # type of completion
+                "description": completion.description, # ???
+                "docstring":   completion.docstring(raw=False, fast=True) # docstring
+            })
         return completions
     except:
         return []

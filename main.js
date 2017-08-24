@@ -9,32 +9,30 @@ define(function (require, exports, module) {
     "use strict";
 
     var AppInit             = brackets.getModule("utils/AppInit"),
-        EditorManager  = brackets.getModule("editor/EditorManager"),
-        DocumentManager = brackets.getModule("document/DocumentManager"),
+        EditorManager       = brackets.getModule("editor/EditorManager"),
+        DocumentManager     = brackets.getModule("document/DocumentManager"),
         CodeHintManager     = brackets.getModule("editor/CodeHintManager"),
-        NodeDomain = brackets.getModule("utils/NodeDomain"),
-        NodeConnection = brackets.getModule("utils/NodeConnection"),
-        ExtensionUtils = brackets.getModule("utils/ExtensionUtils"),
-        CommandManager = brackets.getModule("command/CommandManager"),
-        Commands = brackets.getModule("command/Commands"),
-        KeyBindingManager = brackets.getModule("command/KeyBindingManager"),
-        fileutils = brackets.getModule("file/FileUtils"),
-        Menus          = brackets.getModule("command/Menus"),
-        Dialogs = brackets.getModule("widgets/Dialogs"),
-        PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
-        prefs = PreferencesManager.getExtensionPrefs("python-jedi-brackets"),
-        GOTO = 'saravanan.python-jedi-brackets.goto',
-        MY_COMMAND_ID = "python-jedi-brackets.settings",
-        gotoKey = 'Ctrl-Alt-j';
+        NodeDomain          = brackets.getModule("utils/NodeDomain"),
+        NodeConnection      = brackets.getModule("utils/NodeConnection"),
+        ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
+        CommandManager      = brackets.getModule("command/CommandManager"),
+        Commands            = brackets.getModule("command/Commands"),
+        KeyBindingManager   = brackets.getModule("command/KeyBindingManager"),
+        fileutils           = brackets.getModule("file/FileUtils"),
+        Menus               = brackets.getModule("command/Menus"),
+        Dialogs             = brackets.getModule("widgets/Dialogs"),
+        PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
+        prefs               = PreferencesManager.getExtensionPrefs("python-jedi-brackets"),
+        GOTO                = 'saravanan.python-jedi-brackets.goto',
+        MY_COMMAND_ID       = "python-jedi-brackets.settings",
+        gotoKey             = 'Ctrl-Alt-j';
     
     prefs.definePreference("path_to_python", "string", "python3");
     
     var jedidomain = new NodeDomain("python-jedi", ExtensionUtils.getModulePath(module, "node/JediDomain"));
-    
     var pythonjediPath = ExtensionUtils.getModulePath(module, 'python3_jedi.py');
     
     KeyBindingManager.addBinding(GOTO, gotoKey);
-
     /**
      * @constructor
      */
@@ -51,11 +49,12 @@ define(function (require, exports, module) {
     function getQuery(cond) {
         var editor = EditorManager.getActiveEditor();
         var pos = editor.getCursorPos(true);
-
         var line = editor.document.getLine(pos.line);
         var start = pos.ch;
         var end = start;
         
+        // dunno what this while does, see https://regex101.com/r/gxeIyg/1/
+        // probably finds place for jedi to start autocmpletion?
         while (start >= 0) {
             if ((/[\s.()\[\]{}=\-@!$%\^&\?'"\/|\\`~;:<>,*+]/g).test(line[start - 1])) {
                 break;
@@ -76,34 +75,51 @@ define(function (require, exports, module) {
     
     PyHints.prototype.hasHints = function (editor, implicitChar) {
         var cursor = editor.getCursorPos(true);
-        this.data.source = DocumentManager.getCurrentDocument().getText();
-        this.data.line = cursor.line;
-        this.data.column = cursor.ch;
-        this.data.path = editor.document.file._path;
-        this.data.type = 'autocomplete';
+
+        this.data.source  = DocumentManager.getCurrentDocument().getText();
+        this.data.line    = cursor.line;
+        this.data.column  = cursor.ch;
+        this.data.path    = editor.document.file._path;
+        this.data.type    = 'autocomplete';
         
         var word = editor._codeMirror.findWordAt(cursor);
         var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
         var hash = line.search(/(\#)/g);
         
-        implicitChar = (hash !== -1 && hash < this.data.column) ? null : ((/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) ? (((implicitChar.trim()) === '') ? null : implicitChar) : null);
+        /*
+        why was he so cruel?
+
+        implicitChar = (hash !== -1 && hash < this.data.column) ?
+            null : (
+                (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) ? (
+                    ((implicitChar.trim()) === '') ?
+                        null : implicitChar
+                    ) : null
+            );
+        */
+
+        var canGetHints = false;
+        if (!(hash !== -1 && hash < this.data.column)) {                    // if not commented?
+            if ((/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar)) { // looks like select last word in a line
+                if ((implicitChar.trim()) !== '') {                         // if this last word is not empty
+                    canGetHints = true;                                     // see https://regex101.com/r/GFQNbp/1
+                }
+            }
+        }
         
-        if (implicitChar !== null) {
+        if (canGetHints) {
             var deferred = new $.Deferred();
             var path = prefs.get('path_to_python');
-            var setpy = path === '' ? "python3" : path;
-            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath)
-                    .done(function (result) {
-                
-                    var hintList = JSON.parse(result);
+            var setpy = path.trim() === '' ? "python3" : path;
 
+            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath)
+                .done(function (result) {
+                    var hintList = JSON.parse(result);
                     var query = getQuery.call(this, 'query');
-                
                     var $hintArray = [];
-                    
+
                     if (hintList.length !== 0) {
-                        var i;
-                        for (i = 0; i < hintList.length; i++) {
+                        for (var i = 0; i < hintList.length; i++) {
                             var matchHint = new RegExp("^" + query, "i");
                             var $fhint = $('<span>').addClass('python-jedi-hints');
                             
@@ -112,8 +128,6 @@ define(function (require, exports, module) {
                             var circle_icon = $('<span>' + hintList[i].type[0] + '</span>').addClass("docstring");
                             
                             if (hintList[i].docstring.length !== 0) {
-//                                $('<span>ds</span>').appendTo($fhint).attr('title', hintList[i].docstring).addClass("docstring");
-//                                $fhint.attr("title", hintList[i].docstring);
                                 circle_icon.attr('title', hintList[i].docstring);
                             }
                             circle_icon.appendTo($fhint).attr('title', hintList[i].docstring);
@@ -143,17 +157,17 @@ define(function (require, exports, module) {
                 });
             this.completion = deferred;
             return true;
-        } else { return false; }
+        } else {
+            return false;
+        }
     };
     
     
     
     PyHints.prototype.getHints = function (implicitChar) {
-
         if (CodeHintManager.isOpen()) {
             return null;
         }
-        
         return this.completion;
     };
     
@@ -166,6 +180,10 @@ define(function (require, exports, module) {
     };
 
     
+    function formatHint(hints) {
+
+    }
+
     function gotoDefinition() {
         
         var editor = EditorManager.getActiveEditor();
@@ -199,8 +217,6 @@ define(function (require, exports, module) {
                     console.error('Error: ' + err);
                 });
         }
-        
-        
     }
     
     function handlePreferences() {
@@ -223,7 +239,6 @@ define(function (require, exports, module) {
     }
     
     AppInit.appReady(function () {
-        // Register code hint providers
         
         var pyHints = new PyHints();
         CodeHintManager.registerHintProvider(pyHints, ["python"], 9);
@@ -233,7 +248,8 @@ define(function (require, exports, module) {
         menu.addMenuDivider();
         menu.addMenuItem(MY_COMMAND_ID);
         menu.addMenuDivider();
-        ExtensionUtils.loadStyleSheet(module, "styles/python-jedi-hints.css");
+        ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
+
     });
     
 });
