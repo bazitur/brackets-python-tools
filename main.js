@@ -29,7 +29,7 @@ define(function (require, exports, module) {
     
     prefs.definePreference("path_to_python", "string", "python3");
     
-    var jedidomain = new NodeDomain("python-jedi", ExtensionUtils.getModulePath(module, "node/JediDomain"));
+    var jedidomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/JediDomain"));
     var pythonjediPath = ExtensionUtils.getModulePath(module, 'python3_jedi.py');
     
     KeyBindingManager.addBinding(GOTO, gotoKey);
@@ -69,8 +69,7 @@ define(function (require, exports, module) {
                 start: {
                     line: pos.line,
                     ch: start
-                },
-                end: {
+                }, end: {
                     line: pos.line,
                     ch: end
                 }
@@ -134,12 +133,10 @@ define(function (require, exports, module) {
         */
 
         var canGetHints = false;
-        if (!(hash !== -1 && hash < this.data.column)) {                    // if not commented?
-            if ((/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar)) { // looks like select last word in a line
-                if ((implicitChar.trim()) !== '') {                         // if this last word is not empty
+        if (!(hash !== -1 && hash < this.data.column) &&                    // if not commented?
+             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
+             (implicitChar.trim()) !== '') {                                // if this last word is not empty
                     canGetHints = true;                                     // see https://regex101.com/r/GFQNbp/1
-                }
-            }
         }
         
         if (canGetHints) {
@@ -147,8 +144,8 @@ define(function (require, exports, module) {
             var path = prefs.get('path_to_python');
             var setpy = path.trim() === '' ? "python3" : path;
 
-            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath)
-                .done(function (result) {
+            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath) // execute JediDomain.js
+                .done(function (result) {       // if successfull
                     var hintList = JSON.parse(result);
                     var query = getQuery.call(this, 'query');
 
@@ -164,7 +161,7 @@ define(function (require, exports, module) {
                     };
                     deferred.resolve(resolve_obj);
                 })
-                .fail(function (err) {
+                .fail(function (err) {          // if error
                     console.error('Error: ' + err);
                     if (deferred.state() === "pending") {
                         deferred.reject("Error: " + err.toString());
@@ -250,16 +247,15 @@ define(function (require, exports, module) {
     
     AppInit.appReady(function () {
         
-        var pyHints = new PyHints();
+        var pyHints = new PyHints(),
+            menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         CodeHintManager.registerHintProvider(pyHints, ["python"], 9);
         CommandManager.register("GOTO DEFINITION", GOTO, gotoDefinition);
         CommandManager.register("Python Jedi Settings", MY_COMMAND_ID, handlePreferences);
-        var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         menu.addMenuDivider();
         menu.addMenuItem(MY_COMMAND_ID);
         menu.addMenuDivider();
         ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
-
     });
     
 });

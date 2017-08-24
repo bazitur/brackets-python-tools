@@ -13,7 +13,7 @@ def main(read):
         payload = completions(read["source"], read["line"], read["column"], read["path"])
         payload = json.dumps(payload)
     sys.stdout.write(payload)
-    
+
 def completions(source, line, column, path):
     script = jedi.api.Script(
         source = source,
@@ -38,7 +38,6 @@ def completions(source, line, column, path):
         return []
 
 def goto_def(source, line, column, path):
-
     try:
         script = jedi.api.Script( source, line , column ,path)
         defs = script.goto_definitions()

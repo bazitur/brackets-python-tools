@@ -1,8 +1,8 @@
-(function () {
+(function() {
     "use strict";
-    
     var child_process = require("child_process");
 
+    // is this mysterious cb a callback?
     function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
         var stdout = '',
             stderr = '',
@@ -23,11 +23,11 @@
         });
            
         child.on("close", function (code) {
-            if (code > 0) {
+            if (code > 0) {       // if got error
                 console.log(code);
                 cb(stderr, null);
             }
-            cb(null, stdout);
+            cb(null, stdout);     // pass stdout
         });
     }
 
@@ -36,11 +36,11 @@
      * @param {DomainManager} domainManager The DomainManager for the server
      */
     function init(domainManager) {
-        if (!domainManager.hasDomain("python-jedi")) {
-            domainManager.registerDomain("python-jedi", {major: 0, minor: 1});
+        if (!domainManager.hasDomain("python-tools")) {
+            domainManager.registerDomain("python-tools", {major: 0, minor: 1});
         }
         domainManager.registerCommand(
-            "python-jedi",       // domain name
+            "python-tools",       // domain name
             "getCompletion",     // command name
             cmdGetCompletion,    // command handler function
             true                 // this command is asynchronous in Node
