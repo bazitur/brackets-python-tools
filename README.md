@@ -1,9 +1,9 @@
-# Python-Jedi-Brackets extension
+# brackets-python-tools: Easy Python development with Brackets
 
-Autocompletiton and gotodefinition for python using tool jedi(https://github.com/davidhalter/jedi).
+A set of tools which will make Brackets your favourite backend IDE.
 
 ## Features
-  - Autocomplete.
+  - Smart autocomplete powered by 
   - Goto Definition.
 
 ## Installation
