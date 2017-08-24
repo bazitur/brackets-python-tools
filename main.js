@@ -54,7 +54,7 @@ define(function (require, exports, module) {
         var end = start;
         
         // dunno what this while does, see https://regex101.com/r/gxeIyg/1/
-        // probably finds place for jedi to start autocmpletion?
+        // probably finds place for jedi to start autocompletion?
         while (start >= 0) {
             if ((/[\s.()\[\]{}=\-@!$%\^&\?'"\/|\\`~;:<>,*+]/g).test(line[start - 1])) {
                 break;
@@ -66,13 +66,41 @@ define(function (require, exports, module) {
             return line.substring(start, end);
         } else {
             var word = {
-                start: {line: pos.line, ch: start},
-                end: {line: pos.line, ch: end}
+                start: {
+                    line: pos.line,
+                    ch: start
+                },
+                end: {
+                    line: pos.line,
+                    ch: end
+                }
             };
             return word;
         }
     }
     
+    function formatHint(hint, query) {
+        var matchHint = new RegExp("^" + query, "i");
+        var $fhint = $('<span>').addClass('python-jedi-hints');
+
+        var match_hint = $("<span>").addClass('matched-hint').text(hint.name.slice(0, query.length));
+        $fhint.append(match_hint)
+              .append(hint.complete);
+
+        var circle_icon = $('<span>' + hint.type[0] + '</span>').addClass("docstring");
+
+        if (hint.docstring.length !== 0) {
+            circle_icon.attr('title', hint.docstring);
+        }
+        circle_icon.attr('title', hint.docstring).appendTo($fhint);
+        $fhint.data = hint.name;
+
+        if (hint.description.length !== 0) {
+            $('<span>' + hint.description + '</span>').appendTo($fhint).addClass("description");
+        }
+        return $fhint;
+    }
+
     PyHints.prototype.hasHints = function (editor, implicitChar) {
         var cursor = editor.getCursorPos(true);
 
@@ -116,30 +144,10 @@ define(function (require, exports, module) {
                 .done(function (result) {
                     var hintList = JSON.parse(result);
                     var query = getQuery.call(this, 'query');
-                    var $hintArray = [];
 
-                    if (hintList.length !== 0) {
-                        for (var i = 0; i < hintList.length; i++) {
-                            var matchHint = new RegExp("^" + query, "i");
-                            var $fhint = $('<span>').addClass('python-jedi-hints');
-                            
-                            var match_hint = $("<span>").addClass('matched-hint').text(hintList[i].name.slice(0, query.length));
-                            $fhint.append(match_hint).append(hintList[i].complete);
-                            var circle_icon = $('<span>' + hintList[i].type[0] + '</span>').addClass("docstring");
-                            
-                            if (hintList[i].docstring.length !== 0) {
-                                circle_icon.attr('title', hintList[i].docstring);
-                            }
-                            circle_icon.appendTo($fhint).attr('title', hintList[i].docstring);
-                            $fhint.data = hintList[i].name;
-
-                            if (hintList[i].description.length !== 0) {
-                                $('<span>' + hintList[i].description + '</span>').appendTo($fhint).addClass("description");
-                            }
-
-                            $hintArray.push($fhint);
-                        }
-                    }
+                    var $hintArray = hintList.map(function(hint) {
+                        return formatHint(hint, query);
+                    });
 
                     var resolve_obj = {
                         hints: $hintArray,
@@ -178,11 +186,6 @@ define(function (require, exports, module) {
         currentDoc.replaceRange(hint, word.start, word.end);
         return false;
     };
-
-    
-    function formatHint(hints) {
-
-    }
 
     function gotoDefinition() {
         
