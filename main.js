@@ -81,23 +81,30 @@ define(function (require, exports, module) {
     
     function formatHint(hint, query) {
         var matchHint = new RegExp("^" + query, "i");
+        //var matchHint = new RegExp("^" + query, "i"); // what is that? never used
         var $fhint = $('<span>').addClass('python-jedi-hints');
 
-        var match_hint = $("<span>").addClass('matched-hint').text(hint.name.slice(0, query.length));
-        $fhint.append(match_hint)
-              .append(hint.complete);
+        var match_hint = $("<span>").addClass('matched-hint')
+            .text(hint.name.slice(0, query.length));
 
-        var circle_icon = $('<span>' + hint.type[0] + '</span>').addClass("docstring");
+        $fhint.append(match_hint)
+            .append(hint.complete);
+
+        var circle_icon = $('<span>').text(hint.type[0])
+            .addClass("docstring"); //<span class='docstring'>[f for function]</span>
 
         if (hint.docstring.length !== 0) {
-            circle_icon.attr('title', hint.docstring);
+            circle_icon.attr('title', hint.docstring); //TODO: redo docs!
         }
+
         circle_icon.attr('title', hint.docstring).appendTo($fhint);
         $fhint.data = hint.name;
 
         if (hint.description.length !== 0) {
             $('<span>' + hint.description + '</span>').appendTo($fhint).addClass("description");
         }
+        // <span class="python-jedi-hints"><span class="matched-hint">thi</span>s<span class="docstring" title="">m</span><span class="description">module: python3_jedi</span></span>
+
         return $fhint;
     }
 

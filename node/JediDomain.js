@@ -1,18 +1,12 @@
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4,
-maxerr: 50, node: true */
-/*global */
-
 (function () {
     "use strict";
     
-//    var _domainManager = null;
-    
-    var cp = require("child_process");
+    var child_process = require("child_process");
 
     function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
         var stdout = '',
             stderr = '';
-        var child = cp.spawn(setpy, [pythonjediPath, data]); // create child process
+        var child = child_process.spawn(setpy, [pythonjediPath, data]); // create child process
         var chunks = [];
 
         child.stdout.on("data", function (data) {

@@ -13,7 +13,7 @@ def main(read):
         payload = completions(read["source"], read["line"], read["column"], read["path"])
         payload = json.dumps(payload)
     
-    print(payload)
+    sys.stdout.write(payload)
     
 def completions(source, line, column, path):
     script = jedi.api.Script(
