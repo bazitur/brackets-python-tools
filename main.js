@@ -120,9 +120,9 @@ define(function (require, exports, module) {
         var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
         var hash = line.search(/(\#)/g);
         
-        var canGetHints = !(hash !== -1 && hash < this.data.column)  &&    // if not commented?
+        var canGetHints = !(hash!==-1 && hash<this.data.column)      &&    // if not commented?
             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
-            (implicitChar.trim()) !== '')                                  // if this last word is not empty
+            (implicitChar.trim() !== '')                                   // if this last word is not empty
                                                                            // see https://regex101.com/r/GFQNbp/1
         
         if (canGetHints) {
