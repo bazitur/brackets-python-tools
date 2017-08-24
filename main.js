@@ -120,24 +120,10 @@ define(function (require, exports, module) {
         var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
         var hash = line.search(/(\#)/g);
         
-        /*
-        why was he so cruel?
-
-        implicitChar = (hash !== -1 && hash < this.data.column) ?
-            null : (
-                (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) ? (
-                    ((implicitChar.trim()) === '') ?
-                        null : implicitChar
-                    ) : null
-            );
-        */
-
-        var canGetHints = false;
-        if (!(hash !== -1 && hash < this.data.column) &&                    // if not commented?
-             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
-             (implicitChar.trim()) !== '') {                                // if this last word is not empty
-                    canGetHints = true;                                     // see https://regex101.com/r/GFQNbp/1
-        }
+        var canGetHints = !(hash !== -1 && hash < this.data.column)  &&    // if not commented?
+            (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
+            (implicitChar.trim()) !== '')                                  // if this last word is not empty
+                                                                           // see https://regex101.com/r/GFQNbp/1
         
         if (canGetHints) {
             var deferred = new $.Deferred();
