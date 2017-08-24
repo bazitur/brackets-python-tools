@@ -92,7 +92,7 @@ define(function (require, exports, module) {
         var circle_icon = $('<span>').text(hint.type[0])
             .addClass("docstring"); //<span class='docstring'>[f for function]</span>
 
-        if (hint.docstring.length !== 0) {
+        if (hint.docstring && hint.docstring.length !== 0) {
             circle_icon.attr('title', hint.docstring); //TODO: redo docs!
         }
 

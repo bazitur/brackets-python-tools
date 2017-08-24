@@ -2,34 +2,45 @@
     "use strict";
     var child_process = require("child_process");
 
-    // is this mysterious cb a callback?
-    function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
-        var stdout = '',
-            stderr = '',
-            child = child_process.spawn(setpy, [pythonjediPath, data]), // create child process
-            chunks = [];
-
-        child.stdout.on("data", function (data) {
-            console.log(String(data));
-            chunks.push(data);
+    /* from https://gist.github.com/TooTallNate/1785026 */
+    function emitLines(stream) {
+        var backlog = '';
+        stream.on('data', function (data) {
+            backlog += data;
+            var n = backlog.indexOf('\n');
+            // got a \n? emit one or more 'line' events
+            while (~n) {
+                stream.emit('line', backlog.substring(0, n));
+                backlog = backlog.substring(n + 1);
+                n = backlog.indexOf('\n');
+            }
         });
-        
-        child.stdout.on("end", function () {
-            chunks = Buffer.concat(chunks);
-            stdout = String(chunks);
+        stream.on('end', function () {
+            if (backlog) {
+                stream.emit('line', backlog);
+            }
+        });
+    }
+    var child = null;
+    function cmdGetCompletion(data, setpy, pythonjediPath, callBack) {
+        var stdout = '', stderr = '', chunks = [];
+
+        if (!child) {
+            child = child_process.spawn(setpy, ['-u', pythonjediPath]);
+            emitLines(child.stdout);
+        }
+
+        child.stdout.on("line", function (line) {
+            callBack(null, line);
         });
         
         child.stderr.on("data", function (error) {
             stderr = error.toString();
+            callBack(stderr, null);
         });
-           
-        child.on("close", function (code) {
-            if (code > 0) {       // if got error
-                console.log(code);
-                cb(stderr, null);
-            }
-            cb(null, stdout);     // pass stdout
-        });
+
+        child.stdin.write(data);
+        child.stdin.write('\n');
     }
 
     /**

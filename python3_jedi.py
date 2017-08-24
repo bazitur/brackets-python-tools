@@ -1,18 +1,16 @@
 import json
-import jedi
 import sys
+import os
+sys.path.append(os.path.dirname(__file__))
+import jedi
+sys.path.pop(0) # remove jedi from completion
 
 def main(read):
-    read = json.loads(read)
-
     if read["type"] == "goto":      # GOTO definition, probably?
         payload = goto_def(read["source"], read["line"], read["column"], read["path"])
-        payload = json.dumps(payload)
-
     else:                           # Autocomplete?
         payload = completions(read["source"], read["line"], read["column"], read["path"])
-        payload = json.dumps(payload)
-    sys.stdout.write(payload)
+    return payload
 
 def completions(source, line, column, path):
     script = jedi.api.Script(
@@ -21,9 +19,7 @@ def completions(source, line, column, path):
         column = column,
         path = path
     )
-
     completions = []
-
     try:
         for completion in script.completions():
             completions.append({
@@ -39,11 +35,10 @@ def completions(source, line, column, path):
 
 def goto_def(source, line, column, path):
     try:
-        script = jedi.api.Script( source, line , column ,path)
+        script = jedi.api.Script(source, line, column, path)
         defs = script.goto_definitions()
     except:
         return []
-
     if defs:
         is_built = script.goto_definitions()[0].in_builtin_module()
         module_name = script.goto_definitions()[0].module_name
@@ -61,5 +56,9 @@ def goto_def(source, line, column, path):
     return defs_string
 
 if __name__ == "__main__": 
-    read = sys.argv[1]
-    main(read)
+    while True:
+        inp = sys.stdin.readline()
+        inp = json.loads(inp)
+        out = json.dumps(main(inp))
+        sys.stdout.write(out)
+        sys.stdout.write('\n')
