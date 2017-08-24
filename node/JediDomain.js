@@ -10,6 +10,7 @@
             chunks = [];
 
         child.stdout.on("data", function (data) {
+            console.log(String(data));
             chunks.push(data);
         });
         

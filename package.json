@@ -1,18 +1,9 @@
 {
-    "name": "saravanan.python-jedi-brackets",
+    "name": "bazitur.brackets-python-tools",
     "title": "Python Jedi Brackets",
-    "description": "Auto-Completiton and Goto-Definition for python using tool jedi. Use Ctrl-Alt-J for gotodefinition",
-    "homepage": "https://github.com/saravanan-k90/python-jedi-brackets",
-    "version": "0.1.4",
-    "author": "K.Saravanan <blackcombmagi45@gmail.com>",
-    "license": "MIT",
-    "engines": {
-        "brackets": ">=0.24.0"
-    },
-    "i18n": [ "en"],
-    "package-i18n": {
-        "en": {
-            "description": "Python autocompletion and goto definition using autocompletion tool jedi."
-        }
-    }
+    "description": "Tools that will make your Brackets a full-featured Python IDE",
+    "homepage": "https://github.com/bazitur/brackets-python-tools",
+    "version": "0.1.0",
+    "author": "Basil Miturich",
+    "license": "MIT"
 }

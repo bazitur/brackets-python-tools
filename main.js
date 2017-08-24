@@ -243,5 +243,4 @@ define(function (require, exports, module) {
         menu.addMenuDivider();
         ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
     });
-    
 });
