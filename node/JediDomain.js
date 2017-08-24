@@ -5,9 +5,9 @@
 
     function cmdGetCompletion(data, setpy, pythonjediPath, cb) {
         var stdout = '',
-            stderr = '';
-        var child = child_process.spawn(setpy, [pythonjediPath, data]); // create child process
-        var chunks = [];
+            stderr = '',
+            child = child_process.spawn(setpy, [pythonjediPath, data]), // create child process
+            chunks = [];
 
         child.stdout.on("data", function (data) {
             chunks.push(data);
