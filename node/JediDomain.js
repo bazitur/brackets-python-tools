@@ -25,7 +25,7 @@
     function cmdGetCompletion(data, setpy, pythonjediPath, callBack) {
         var stdout = '', stderr = '', chunks = [];
 
-        if (!child) {
+        if (!child) { // spawn process if not exists. Else use the old one
             child = child_process.spawn(setpy, ['-u', pythonjediPath]);
             emitLines(child.stdout);
         }

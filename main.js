@@ -51,7 +51,7 @@ define(function (require, exports, module) {
     prefs.definePreference("path_to_python", "string", "python3");
     
     var jedidomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/JediDomain"));
-    var pythonjediPath = ExtensionUtils.getModulePath(module, 'python3_jedi.py');
+    var pythonjediPath = ExtensionUtils.getModulePath(module, 'python_utils.py');
     
     KeyBindingManager.addBinding(GOTO, gotoKey);
     /**
@@ -262,6 +262,6 @@ define(function (require, exports, module) {
         menu.addMenuDivider();
         menu.addMenuItem(MY_COMMAND_ID);
         menu.addMenuDivider();
-        ExtensionUtils.loadStyleSheet(module, "styles/styles.css");
+        ExtensionUtils.loadStyleSheet(module, "styles/styles.less");
     });
 });

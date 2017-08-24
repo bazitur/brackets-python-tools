@@ -77,7 +77,7 @@ def goto_def(source, line, column, path):
 
     return defs_string
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     while True:
         inp = sys.stdin.readline()
         inp = json.loads(inp)
