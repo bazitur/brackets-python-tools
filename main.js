@@ -62,10 +62,10 @@ define(function (require, exports, module) {
     function PyHints() {
         this.data = {
             source : '',
-            line : '',
+            line :   '',
             column : '',
-            path : '',
-            type: ''
+            path :   '',
+            type:    ''
         };
     }
 
@@ -125,9 +125,74 @@ define(function (require, exports, module) {
         if (hint.description.length !== 0) {
             $('<span>' + hint.description + '</span>').appendTo($fhint).addClass("description");
         }
-        // <span class="python-jedi-hints"><span class="matched-hint">thi</span>s<span class="docstring" title="">m</span><span class="description">module: python3_jedi</span></span>
+        /*
+        <span class="python-jedi-hints">
+            <span class="matched-hint">thi</span>s
+            <span class="docstring" title="">m</span><
+            span class="description">module: python3_jedi</span>
+        </span>
+        */
 
         return $fhint;
+    }
+
+    function _getPython() {
+        return 'python3'; //TODO
+    }
+
+    function _getHints(implicitChar) {
+        var editor   = EditorManager.getActiveEditor(),
+            cursor   = editor.getCursorPos(true),
+            word     = editor._codeMirror.findWordAt(cursor),
+            line     = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head),
+            hash     = line.search(/(\#)/g),
+            pypath   = _getPython(),
+            deferred = new $.Deferred(),
+            query    = {
+                source: DocumentManager.getCurrentDocument().getText(),
+                line:   cursor.line,
+                column: cursor.ch,
+                path:   editor.document.file._path,
+                type:  'autocomplete'
+            };
+        pythonDomain.exec("pythonShell", JSON.stringify(query), pypath, pythonToolsPath)
+            .done(function (result) {       // if successfull
+                var hintList = JSON.parse(result),
+                    query = getQuery.call(this, 'query');
+
+                var $hintArray = hintList.map(function(hint) {
+                    return formatHint(hint, query);
+                });
+                var resolve_obj = {
+                    hints: $hintArray,
+                    match: null,
+                    selectInitial: true,
+                    handleWideResults: false
+                };
+                deferred.resolve(resolve_obj);
+            })
+            .fail(function (err) {          // if error
+                console.error('Error: ' + err);
+                if (deferred.state() === "pending") {
+                    deferred.reject("Error: " + err.toString());
+                }
+            });
+        return deferred;
+    }
+
+    function _hasHints(editor, implicitChar) {
+        if (implicitChar === null) return true;
+
+        var cursor = editor.getCursorPos(true),
+            word = editor._codeMirror.findWordAt(cursor);
+        var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
+        var hash = line.search(/(\#)/g);
+
+        var canGetHints = !(hash !== -1 && hash < cursor.ch)      &&    // if not commented?
+            (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
+            (implicitChar.trim() !== '')                                   // if this last word is not empty
+                                                                           // see https://regex101.com/r/GFQNbp/1
+        return canGetHints;
     }
 
     PyHints.prototype.hasHints = function (editor, implicitChar) {
