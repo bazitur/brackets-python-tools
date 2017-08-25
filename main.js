@@ -47,6 +47,7 @@ define(function (require, exports, module) {
         Menus               = brackets.getModule("command/Menus"),
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
+        Mustache            = brackets.getModule("thirdparty/mustache/mustache"),
         prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
         //GOTO                = 'brackets-python-tools.goto',
         //gotoKey             = 'Ctrl-Alt-j',
@@ -54,11 +55,15 @@ define(function (require, exports, module) {
     
     prefs.definePreference("path_to_python", "string", "python3");
     
-    var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
-    var pythonToolsPath = ExtensionUtils.getModulePath(module, 'python_utils.py');
+    var pythonDomain    = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain")),
+        pythonToolsPath = ExtensionUtils.getModulePath(module, 'python_utils.py'),
+        hintTemplate    = require("text!templates/hint.html");
     
-    //KeyBindingManager.addBinding(GOTO, gotoKey);
+    Mustache.parse(hintTemplate); // cache template
 
+    /**
+    @constructor
+    */
     function PyHints() {
         this.data = {
             source : '',
@@ -102,20 +107,22 @@ define(function (require, exports, module) {
     }
     
     function formatHint(hint, query) {
-        var matchHint = new RegExp("^" + query, "i");
-        //var matchHint = new RegExp("^" + query, "i"); // what is that? never used
+
+        /*return Mustache.render(hintTemplate, {
+            hint: {
+                first: hint.name.slice(0, query.length),
+                last: hint.complete
+            },
+            docstring: hint.docstring,
+            description: hint.description
+        });
+        */
         var $fhint = $('<span>').addClass('python-jedi-hints');
+        var matched_part = $("<b>").text(hint.name.slice(0, query.length));
+        $fhint.append(matched_part).append(hint.complete);
 
-        var match_hint = $("<span>").addClass('matched-hint')
-            .text(hint.name.slice(0, query.length));
-
-        $fhint.append(match_hint)
-            .append(hint.complete);
-
-        var circle_icon = $('<span>').text(hint.type[0])
-            .addClass("docstring"); //<span class='docstring'>[f for function]</span>
-
-        if (hint.docstring && hint.docstring.length !== 0) {
+        var circle_icon = $('<span>').text(hint.type[0]).addClass("link");
+        if (hint.docstring.length !== 0) {
             circle_icon.attr('title', hint.docstring); //TODO: redo docs!
         }
 
@@ -128,11 +135,10 @@ define(function (require, exports, module) {
         /*
         <span class="python-jedi-hints">
             <span class="matched-hint">thi</span>s
-            <span class="docstring" title="">m</span><
-            span class="description">module: python3_jedi</span>
+            <span class="docstring" title="">m</span>
+            <span class="description">module: python3_jedi</span>
         </span>
         */
-
         return $fhint;
     }
 
@@ -141,7 +147,7 @@ define(function (require, exports, module) {
     }
 
     function _continueHinting() {
-        return false;
+        return false;  //TODO
     }
 
     PyHints.prototype.getHints = function(implicitChar) {
@@ -185,81 +191,19 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.hasHints = function (editor, implicitChar) {
-        if (implicitChar === null) return true;
+        if (implicitChar === null || implicitChar === ".") return true;
 
         var cursor = editor.getCursorPos(true),
-            word = editor._codeMirror.findWordAt(cursor);
-        var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
-        var hash = line.search(/(\#)/g);
-
-        var canGetHints = !(hash !== -1 && hash < cursor.ch)      &&    // if not commented?
+            word = editor._codeMirror.findWordAt(cursor),
+            token_type = editor._codeMirror.getTokenTypeAt(cursor).substr(9),
+            line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
+        console.error(token_type);
+        var canGetHints = (["comment", "string"].indexOf(token_type) === -1) && // if not in comment or string
             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
             (implicitChar.trim() !== '')                                   // if this last word is not empty
                                                                            // see https://regex101.com/r/GFQNbp/1
         return canGetHints;
     }
-/*
-    PyHints.prototype.hasHints = function (editor, implicitChar) {
-        var cursor = editor.getCursorPos(true);
-
-        this.data.source  = DocumentManager.getCurrentDocument().getText();
-        this.data.line    = cursor.line;
-        this.data.column  = cursor.ch;
-        this.data.path    = editor.document.file._path;
-        this.data.type    = 'autocomplete';
-        
-        var word = editor._codeMirror.findWordAt(cursor);
-        var line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
-        var hash = line.search(/(\#)/g);
-        
-        var canGetHints = !(hash!==-1 && hash<this.data.column)      &&    // if not commented?
-            (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
-            (implicitChar.trim() !== '')                                   // if this last word is not empty
-                                                                           // see https://regex101.com/r/GFQNbp/1
-        if (canGetHints) {
-            var deferred = new $.Deferred();
-            var path = prefs.get('path_to_python');
-            var setpy = path.trim() === '' ? "python3" : path;
-
-            pythonDomain.exec("pythonShell", JSON.stringify(this.data), setpy, pythonToolsPath)
-                .done(function (result) {       // if successfull
-                    var hintList = JSON.parse(result);
-                    var query = getQuery.call(this, 'query');
-
-                    var $hintArray = hintList.map(function(hint) {
-                        return formatHint(hint, query);
-                    });
-
-                    var resolve_obj = {
-                        hints: $hintArray,
-                        match: null,
-                        selectInitial: true,
-                        handleWideResults: false
-                    };
-                    deferred.resolve(resolve_obj);
-                })
-                .fail(function (err) {          // if error
-                    console.error('Error: ' + err);
-                    if (deferred.state() === "pending") {
-                        deferred.reject("Error: " + err.toString());
-                    }
-                });
-            this.completion = deferred;
-            return true;
-        } else {
-            return false;
-        }
-    };
-    */
-    
-    
-    /*PyHints.prototype.getHints = function (implicitChar) {
-        if (CodeHintManager.isOpen()) {
-            return null;
-        }
-        return this.completion;
-    };
-    */
     PyHints.prototype.insertHint = function (hint) {
         hint = hint.data;
         var currentDoc = DocumentManager.getCurrentDocument();

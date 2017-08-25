@@ -23,45 +23,42 @@
  *
  */
 
-span.python-jedi-hints {
-    width: 300px;
+.python-jedi-hints {
+    width: 400px;
     display: inline-block;
     font-size: 14px;
-}
 
-.matched-hint {
-    font-weight: 500;
-}
+    .matched-hint {
+        font-weight: 500;
+    }
 
-.type {
-    font-weight: 100;
-    font-style: italic !important;
-    color: forestgreen !important;
-    display: block;
-}
-
-.description {
-    display: block;
-    color: #6495ed;
-    word-wrap: break-word;
-    white-space: normal;
-    width:250px;
-    font-size: 13px;
-}
-
-.docstring {
-    display: block;
-    float: right;
-    width: 18px;
-    height: 18px;
-    font-size: 15px;
-    line-height: 17px;
-    font-family: SourceSansPro-Semibold;
-    font-weight: bold;
-    font-style: italic;
-    text-align: center;
-    color: #ffdb4e;
-    background-color: #356f9f;
-    border-radius: 18px;
-    cursor: pointer;
+    .description {
+        display: block;
+        color: #6495ed;
+        word-wrap: break-word;
+        white-space: normal;
+        width: 250px;
+        font-size: 13px;
+    }
+    .link:before {
+        position: relative;
+        float: left;
+        top: 1px;
+        content: "i" !important;
+        width: 16px;
+        height: 16px;
+        margin-right:10px;
+        font-size: 14px;
+        font-weight: bold;
+        font-style: italic;
+        line-height: 15px;
+        text-align: center;
+        visibility: visible !important;
+        font-weight: 900;
+        color: #fff;
+        background-color: #2ea56c;
+        border-color: #177F42;
+        border-radius: 16px;
+        font-family: SourceSansPro-Semibold;
+    }
 }
