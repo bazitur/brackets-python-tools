@@ -54,13 +54,11 @@ define(function (require, exports, module) {
     
     prefs.definePreference("path_to_python", "string", "python3");
     
-    var jedidomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/JediDomain"));
-    var pythonjediPath = ExtensionUtils.getModulePath(module, 'python_utils.py');
+    var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
+    var pythonToolsPath = ExtensionUtils.getModulePath(module, 'python_utils.py');
     
     //KeyBindingManager.addBinding(GOTO, gotoKey);
-    /**
-     * @constructor
-     */
+
     function PyHints() {
         this.data = {
             source : '',
@@ -78,7 +76,7 @@ define(function (require, exports, module) {
             start  = pos.ch,
             end    = start;
         
-        // dunno what this while does, see https://regex101.com/r/gxeIyg/1/
+        // no idea what this while does, see https://regex101.com/r/gxeIyg/1/
         // probably finds place for jedi to start autocompletion?
         while (start >= 0) {
             if ((/[\s.()\[\]{}=\-@!$%\^&\?'"\/|\\`~;:<>,*+]/g).test(line[start - 1])) {
@@ -149,13 +147,12 @@ define(function (require, exports, module) {
             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
             (implicitChar.trim() !== '')                                   // if this last word is not empty
                                                                            // see https://regex101.com/r/GFQNbp/1
-        
         if (canGetHints) {
             var deferred = new $.Deferred();
             var path = prefs.get('path_to_python');
             var setpy = path.trim() === '' ? "python3" : path;
 
-            jedidomain.exec("getCompletion", JSON.stringify(this.data), setpy, pythonjediPath) // execute JediDomain.js
+            pythonDomain.exec("pythonShell", JSON.stringify(this.data), setpy, pythonToolsPath)
                 .done(function (result) {       // if successfull
                     var hintList = JSON.parse(result);
                     var query = getQuery.call(this, 'query');
@@ -220,7 +217,7 @@ define(function (require, exports, module) {
         if (extension === "py") {
             var path = prefs.get('path_to_python');
             var setpy = path === '' ? "python3" : path;
-            jedidomain.exec("getCompletion", JSON.stringify(data), setpy, pythonjediPath)
+            pythonDomain.exec("getCompletion", JSON.stringify(data), setpy, pythonjediPath)
                 .done(function (result) {
                     var fileInfo = JSON.parse(result)[0];
                     if (fileInfo !== undefined && !fileInfo.is_built_in) {

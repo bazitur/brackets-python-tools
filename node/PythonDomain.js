@@ -22,7 +22,7 @@
         });
     }
     var child = null;
-    function cmdGetCompletion(data, setpy, pythonjediPath, callBack) {
+    function cmdPythonShell(data, setpy, pythonjediPath, callBack) {
         var stdout = '', stderr = '', chunks = [];
 
         if (!child) { // spawn process if not exists. Else use the old one
@@ -33,7 +33,7 @@
         child.stdout.on("line", function (line) {
             callBack(null, line);
         });
-        
+
         child.stderr.on("data", function (error) {
             stderr = error.toString();
             callBack(stderr, null);
@@ -43,22 +43,18 @@
         child.stdin.write('\n');
     }
 
-    /**
-     * Initializes the test domain with several test commands.
-     * @param {DomainManager} domainManager The DomainManager for the server
-     */
     function init(domainManager) {
         if (!domainManager.hasDomain("python-tools")) {
             domainManager.registerDomain("python-tools", {major: 0, minor: 1});
         }
         domainManager.registerCommand(
             "python-tools",       // domain name
-            "getCompletion",     // command name
-            cmdGetCompletion,    // command handler function
-            true                 // this command is asynchronous in Node
+            "pythonShell",        // command name
+            cmdPythonShell,       // command handler function
+            true                  // this command is asynchronous in Node
         );
     }
-    
+
     exports.init = init;
-    
+
 }());
