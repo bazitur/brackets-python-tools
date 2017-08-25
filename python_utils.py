@@ -20,67 +20,98 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import json
+from json import loads, dumps
 import sys
 import os
 sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
-def main(read):
-    if read["type"] == "goto":      # GOTO definition, probably?
-        payload = goto_def(read["source"], read["line"], read["column"], read["path"])
-    else:                           # Autocomplete?
-        payload = completions(read["source"], read["line"], read["column"], read["path"])
-    return payload
 
-def completions(source, line, column, path):
-    script = jedi.api.Script(
-        source = source,
-        line = line + 1,
-        column = column,
-        path = path
-    )
-    completions = []
-    try:
-        for completion in script.completions():
-            completions.append({
-                "complete":    completion.complete,    # completion
-                "name":        completion.name,        # full name?
-                "type":        completion.type,        # type of completion
-                "description": completion.description, # not tht clear
-                "docstring":   completion.docstring(raw=False, fast=True) # docstring
-            })
-        return completions
-    except:
-        return []
+class PythonTools:
+    def __init__(self):
+        pass
 
-def goto_def(source, line, column, path):
-    try:
-        script = jedi.api.Script(source, line, column, path)
-        defs = script.goto_definitions()
-    except:
-        return []
-    if defs:
-        is_built = script.goto_definitions()[0].in_builtin_module()
-        module_name = script.goto_definitions()[0].module_name
+    def input(self):
+        """
+        Input single line from stdin as JSON, deserializes it and returns
+        request object.
+        """
+        return loads(sys.stdin.readline())
 
-    defs_string = list()
-    for get in defs:
-        defs_string.append({
-            "module_path": get.module_path,
-            "line": get.line,
-            "column":get.column,
-            "is_built_in": is_built,
-        })
-        break
+    def output(self, responce):
+        """
+        Serializes JSON responce and writes it to a stdout.
+        """
+        sys.stdout.write(dumps(responce))
+        sys.stdout.write('\n')
 
-    return defs_string
+    def process(self, request):
+        """
+        Lookups request type and dispatches it to other methods.
+        Raises error, if request type is unknown.
+        """
+        if request["type"] == "goto":
+            return self.goto_definition(request)
+        elif request["type"] == "autocomplete":
+            return self.autocomplete(request)
+        else:
+            raise Error('Not Achievable')
+
+    def autocomplete(self, request):
+        script = jedi.api.Script(
+            source = request["source"],
+            line   = request["line"] + 1, # Jedi starts line count with 1
+            column = request["column"],
+            path   = request["path"]
+        )
+        completions = []
+        try:
+            for completion in script.completions():
+                completions.append({
+                    "complete":    completion.complete,    # completion
+                    "name":        completion.name,        # full name?
+                    "type":        completion.type,        # type of completion
+                    "description": completion.description, # not that clear
+                    "docstring":   completion.docstring(raw=False, fast=True) # docstring
+                })
+            return completions
+        except:
+            return []
+
+    def goto_definition(self, request):
+        try:
+            script = jedi.api.Script(request["source"], request["line"],
+                                     request["column"], request["path"])
+            definitions = script.goto_definitions()
+        except:
+            return []
+
+        if not definitions:
+            return []
+
+        definition = definitions[0]
+        is_built_in = definition.in_builtin_module()
+        module_name = definition.module_name
+
+        response = [{
+            "module_path": definition.module_path,
+            "line":        definition.line,
+            "column":      definition.column,
+            "is_built_in": is_built_in
+        }]
+        return response
+
+    def watch(self):
+        """
+        Wait for input, delegate it to self.process, and output its response.
+        """
+        while True:
+            request = self.input()
+            response = self.process(request)
+            self.output(response)
+
 
 if __name__ == "__main__":
-    while True:
-        inp = sys.stdin.readline()
-        inp = json.loads(inp)
-        out = json.dumps(main(inp))
-        sys.stdout.write(out)
-        sys.stdout.write('\n')
+    python_tools = PythonTools()
+    python_tools.watch()
