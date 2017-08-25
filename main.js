@@ -209,11 +209,11 @@ define(function (require, exports, module) {
         
         var cursor = editor.getCursorPos(true);
         var data = {
-            source : DocumentManager.getCurrentDocument().getText(),
-            line : cursor.line + 1,
-            column : cursor.ch + 1,
-            path : editor.document.file._path,
-            type : 'goto'
+            source: DocumentManager.getCurrentDocument().getText(),
+            line: cursor.line + 1,
+            column: cursor.ch + 1,
+            path: editor.document.file._path,
+            type: 'goto'
         };
         
         var extension = fileutils.getFileExtension(data.path);

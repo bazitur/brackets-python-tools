@@ -3,30 +3,22 @@
 A set of tools which will make Brackets your favourite backend IDE.
 
 ## Features
-  - Smart autocomplete powered by 
-  - Goto Definition.
+  - Smart autocomplete powered by [Jedi](http://jedi.readthedocs.io/en/latest/index.html)
+  - Goto Definition (In development)
+
+## Planned features
+  - Inline Python documentation
+  - Interactive python console
+  - Debugger
+  - Linter
 
 ## Installation
-To install latest release of Python-Jedi-Brackets use the built-in Brackets Extension Manager which downloads the extension from the extension registry.
+You can install Python Tools from official Brackets Extension Registry.
 
-### Usage
+## Usage
+This Extension uses Python 3 interpreter in your path by default. You can customize interpreter either in Preferences File or
+in Python Tools tab.
 
-This Extension uses python3 interpreter in your path by default (No need to add python path).
-
-For python2 autocomplete go to View->Python Jedi Settings-> Enter python path. (for default python2 just enter python)
-
-#### Python path
-  - Give Appropriate path to python as ., eg: /home/user/py3pyenv/bin/python3 or /home/user/py2virtualenv/bin/python.
-
-#### To Use Goto Definition
-  - Use the keyboard shortcut `ctrl-alt-j`.
-
-### Note
-  - Enter Correct Python path., otherwise autocompletion won't work.
-
-  - The Extension is tested only in linux environment. The package has not been tested under windows environment or mac. It might
-be buggy.
-
-### Links
-  - Jedi library api reference [Jedi](http://jedi.readthedocs.io/en/latest/index.html).
-  - Regular expressions testing and debugging using [regex101](https://regex101.com).
+### Available settings:
+#### `python_path`
+Full path to python interpreter. By default extension uses `python3`.
