@@ -22,11 +22,11 @@
         });
     }
     var child = null;
-    function cmdPythonShell(data, setpy, pythonjediPath, callBack) {
+    function cmdPythonShell(data, setpy, pythonPath, callBack) {
         var stdout = '', stderr = '', chunks = [];
 
         if (!child) { // spawn process if not exists. Else use the old one
-            child = child_process.spawn(setpy, ['-u', pythonjediPath]);
+            child = child_process.spawn(setpy, ['-u', pythonPath]);
             emitLines(child.stdout);
         }
 

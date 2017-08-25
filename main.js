@@ -107,8 +107,7 @@ define(function (require, exports, module) {
     }
     
     function formatHint(hint, query) {
-
-        /*return Mustache.render(hintTemplate, {
+/*        fhint = Mustache.render(hintTemplate, {
             hint: {
                 first: hint.name.slice(0, query.length),
                 last: hint.complete
@@ -116,30 +115,33 @@ define(function (require, exports, module) {
             docstring: hint.docstring,
             description: hint.description
         });
-        */
-        var $fhint = $('<span>').addClass('python-jedi-hints');
+        var $fhint = $(fhint);
+        $fhint.data = hint.name;*/
+
+        var $fhint = $('<span>').addClass('python-tools-hint');
         var matched_part = $("<b>").text(hint.name.slice(0, query.length));
         $fhint.append(matched_part).append(hint.complete);
 
-        var circle_icon = $('<span>').text(hint.type[0]).addClass("link");
-        if (hint.docstring.length !== 0) {
+        var circle_icon = $('<span>').text('i').addClass("link");
+        if (hint.docstring.trim() === '') {
             circle_icon.attr('title', hint.docstring); //TODO: redo docs!
         }
 
-        circle_icon.attr('title', hint.docstring).appendTo($fhint);
-        $fhint.data = hint.name;
+        circle_icon.appendTo($fhint);
+        $fhint.data = hint.name; //!!!
 
         if (hint.description.length !== 0) {
-            $('<span>' + hint.description + '</span>').appendTo($fhint).addClass("description");
+            $('<span>').text(hint.description).appendTo($fhint).addClass("description");
         }
+
+        return $fhint;
         /*
-        <span class="python-jedi-hints">
-            <span class="matched-hint">thi</span>s
-            <span class="docstring" title="">m</span>
+        <span class="python-tools-hint">
+            <b>thi</b>s
+            <span class="link" title="">i</span>
             <span class="description">module: python3_jedi</span>
         </span>
         */
-        return $fhint;
     }
 
     function _getPython() {
@@ -197,13 +199,14 @@ define(function (require, exports, module) {
             word = editor._codeMirror.findWordAt(cursor),
             token_type = editor._codeMirror.getTokenTypeAt(cursor).substr(9),
             line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
-        console.error(token_type);
+
         var canGetHints = (["comment", "string"].indexOf(token_type) === -1) && // if not in comment or string
             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
             (implicitChar.trim() !== '')                                   // if this last word is not empty
                                                                            // see https://regex101.com/r/GFQNbp/1
         return canGetHints;
     }
+
     PyHints.prototype.insertHint = function (hint) {
         hint = hint.data;
         var currentDoc = DocumentManager.getCurrentDocument();

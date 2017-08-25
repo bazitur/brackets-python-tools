@@ -27,7 +27,6 @@ sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
-
 class PythonTools:
     def __init__(self):
         pass
