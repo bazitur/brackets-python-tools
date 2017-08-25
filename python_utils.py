@@ -48,7 +48,7 @@ def completions(source, line, column, path):
                 "complete":    completion.complete,    # completion
                 "name":        completion.name,        # full name?
                 "type":        completion.type,        # type of completion
-                "description": completion.description, # ???
+                "description": completion.description, # not tht clear
                 "docstring":   completion.docstring(raw=False, fast=True) # docstring
             })
         return completions

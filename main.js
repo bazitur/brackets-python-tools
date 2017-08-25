@@ -23,8 +23,12 @@
  *
  */
 
-/*jslint vars: true, plusplus: true, devel: true, nomen: true, regexp: true, indent: 4, maxerr: 50 */
-/*global define, $, brackets, window */
+//TODO: fix double-lettering bug
+//TODO: run hints after dot
+//TODO: styling, probably copy/paste from JShint
+//TODO: rewrite formatHint
+//TODO: put jump-to feature to the standart API
+//TODO: write docs utility?
 
 define(function (require, exports, module) {
     "use strict";
@@ -43,17 +47,17 @@ define(function (require, exports, module) {
         Menus               = brackets.getModule("command/Menus"),
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
-        prefs               = PreferencesManager.getExtensionPrefs("python-jedi-brackets"),
-        GOTO                = 'saravanan.python-jedi-brackets.goto',
-        MY_COMMAND_ID       = "python-jedi-brackets.settings",
-        gotoKey             = 'Ctrl-Alt-j';
+        prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
+        //GOTO                = 'brackets-python-tools.goto',
+        //gotoKey             = 'Ctrl-Alt-j',
+        MY_COMMAND_ID       = "python-tools.settings";
     
     prefs.definePreference("path_to_python", "string", "python3");
     
     var jedidomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/JediDomain"));
     var pythonjediPath = ExtensionUtils.getModulePath(module, 'python_utils.py');
     
-    KeyBindingManager.addBinding(GOTO, gotoKey);
+    //KeyBindingManager.addBinding(GOTO, gotoKey);
     /**
      * @constructor
      */
@@ -68,11 +72,11 @@ define(function (require, exports, module) {
     }
 
     function getQuery(cond) {
-        var editor = EditorManager.getActiveEditor();
-        var pos = editor.getCursorPos(true);
-        var line = editor.document.getLine(pos.line);
-        var start = pos.ch;
-        var end = start;
+        var editor = EditorManager.getActiveEditor(),
+            pos    = editor.getCursorPos(true),
+            line   = editor.document.getLine(pos.line),
+            start  = pos.ch,
+            end    = start;
         
         // dunno what this while does, see https://regex101.com/r/gxeIyg/1/
         // probably finds place for jedi to start autocompletion?
@@ -198,6 +202,7 @@ define(function (require, exports, module) {
         return false;
     };
 
+    /*
     function gotoDefinition() {
         
         var editor = EditorManager.getActiveEditor();
@@ -232,6 +237,7 @@ define(function (require, exports, module) {
                 });
         }
     }
+    */
     
     function handlePreferences() {
         var path = prefs.get('path_to_python');
@@ -257,8 +263,8 @@ define(function (require, exports, module) {
         var pyHints = new PyHints(),
             menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         CodeHintManager.registerHintProvider(pyHints, ["python"], 9);
-        CommandManager.register("GOTO DEFINITION", GOTO, gotoDefinition);
-        CommandManager.register("Python Jedi Settings", MY_COMMAND_ID, handlePreferences);
+        //CommandManager.register("GOTO DEFINITION", GOTO, gotoDefinition);
+        CommandManager.register("Python Tools Settings", MY_COMMAND_ID, handlePreferences);
         menu.addMenuDivider();
         menu.addMenuItem(MY_COMMAND_ID);
         menu.addMenuDivider();
