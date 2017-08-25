@@ -140,7 +140,11 @@ define(function (require, exports, module) {
         return 'python3'; //TODO
     }
 
-    function _getHints(implicitChar) {
+    function _continueHinting() {
+        return false;
+    }
+
+    PyHints.prototype.getHints = function(implicitChar) {
         var editor   = EditorManager.getActiveEditor(),
             cursor   = editor.getCursorPos(true),
             word     = editor._codeMirror.findWordAt(cursor),
@@ -180,7 +184,7 @@ define(function (require, exports, module) {
         return deferred;
     }
 
-    function _hasHints(editor, implicitChar) {
+    PyHints.prototype.hasHints = function (editor, implicitChar) {
         if (implicitChar === null) return true;
 
         var cursor = editor.getCursorPos(true),
@@ -194,7 +198,7 @@ define(function (require, exports, module) {
                                                                            // see https://regex101.com/r/GFQNbp/1
         return canGetHints;
     }
-
+/*
     PyHints.prototype.hasHints = function (editor, implicitChar) {
         var cursor = editor.getCursorPos(true);
 
@@ -246,22 +250,22 @@ define(function (require, exports, module) {
             return false;
         }
     };
+    */
     
     
-    
-    PyHints.prototype.getHints = function (implicitChar) {
+    /*PyHints.prototype.getHints = function (implicitChar) {
         if (CodeHintManager.isOpen()) {
             return null;
         }
         return this.completion;
     };
-    
+    */
     PyHints.prototype.insertHint = function (hint) {
         hint = hint.data;
         var currentDoc = DocumentManager.getCurrentDocument();
         var word = getQuery.call(this, 'wordObj');
         currentDoc.replaceRange(hint, word.start, word.end);
-        return false;
+        return _continueHinting();
     };
 
     /*
