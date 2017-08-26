@@ -21,6 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from json import loads, dumps
+from docutils.core import publish_parts
 import sys
 import os
 sys.path.append(os.path.dirname(__file__))
@@ -50,12 +51,16 @@ class PythonTools:
         Lookups request type and dispatches it to other methods.
         Raises error, if request type is unknown.
         """
-        if request["type"] == "goto":
-            return self.goto_definition(request)
-        elif request["type"] == "autocomplete":
-            return self.autocomplete(request)
-        else:
+        dispatches = {
+            "goto": self.goto_definition,
+            "docs": self.get_documentation,
+            "autocomplete": self.autocomplete
+        }
+        processor = dispatches.get(request["type"], None)
+        if processor is None:
             raise Error('Not Achievable')
+        else:
+            return processor(request)
 
     def autocomplete(self, request):
         script = jedi.api.Script(
@@ -79,9 +84,28 @@ class PythonTools:
         except:
             return []
 
+    def get_documentation(self, request):
+        script = jedi.api.Script(
+            source = request["source"],
+            line   = request["line"] + 1, # Jedi starts line count with 1
+            column = request["column"],
+            path   = request["path"]
+        )
+
+        if len(script.completions()) != 1:
+            return {"docs": None}
+        completion = script.completions()[0]
+        docstring = completion.docstring(raw=False, fast=False)
+        if not docstring.strip():
+            return {"docs": None}
+        return {
+            "docs": docstring,
+            "title": completion.full_name
+        }
+
     def goto_definition(self, request):
         try:
-            script = jedi.api.Script(request["source"], request["line"],
+            script = jedi.api.Script(request["source"], request["line"] + 1,
                                      request["column"], request["path"])
             definitions = script.goto_definitions()
         except:

@@ -71,7 +71,7 @@ define(function (require, exports, module) {
     function PyHints(pyAPI) {
         pythonAPI = pyAPI;
 
-        this.data = {
+        this.data = {   //REMOVE: not used anywhere?
             source : '',
             line :   '',
             column : '',
@@ -126,10 +126,10 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.insertHint = function (hint) {
-        hint = hint.data.name;
+        hintName = hint.data.name;
         var currentDoc = DocumentManager.getCurrentDocument();
         var word = getQuery('wordObj');
-        currentDoc.replaceRange(hint, word.start, word.end);
+        currentDoc.replaceRange(hintName, word.start, word.end);
         return false; //TODO
     };
 

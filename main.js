@@ -41,18 +41,14 @@ define(function (require, exports, module) {
         CodeHintManager     = brackets.getModule("editor/CodeHintManager"),
         NodeDomain          = brackets.getModule("utils/NodeDomain"),
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
-        //CommandManager      = brackets.getModule("command/CommandManager"),
-        //Commands            = brackets.getModule("command/Commands"),
-        //KeyBindingManager   = brackets.getModule("command/KeyBindingManager"),
-        //fileutils           = brackets.getModule("file/FileUtils"),
-        //Menus               = brackets.getModule("command/Menus"),
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
         prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
         pythonToolsPath     = ExtensionUtils.getModulePath(module, 'python_utils.py'),
         MY_COMMAND_ID       = "python-tools.settings";
     
-    var PyHints = require("PyHints");
+    var PyHints = require("PyHints"),
+        PyDocs  = require("PyDocs");
 
     prefs.definePreference("path_to_python", "string", "python3");
     var pyPath = "python3", //TODO
@@ -75,8 +71,7 @@ define(function (require, exports, module) {
             .fail(function(error) {
                 console.error("Python Tools Error: " + error);
                 deferred.reject();
-        });
-
+            });
         return deferred;
     }
 
@@ -101,8 +96,12 @@ define(function (require, exports, module) {
     
     AppInit.appReady(function () {
         
-        var python_hints = new PyHints(pythonAPI);
+        var python_hints = new PyHints(pythonAPI),
+            python_docs  = new PyDocs(pythonAPI);
+
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
-        ExtensionUtils.loadStyleSheet(module, "styles/styles.less");
+        EditorManager.registerInlineDocsProvider(python_docs);
+
+        ExtensionUtils.loadStyleSheet(module, "styles/python-tools.less");
     });
 });
