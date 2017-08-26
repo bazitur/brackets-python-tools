@@ -68,12 +68,13 @@ class PythonTools:
         try:
             for completion in script.completions():
                 completions.append({
-                    "complete":    completion.complete,    # completion
-                    "name":        completion.name,        # full name?
+                    "complete":    completion.complete,    # completion, only ending
+                    "name":        completion.name,        # full completion
                     "type":        completion.type,        # type of completion
                     "description": completion.description, # not that clear
                     "docstring":   completion.docstring(raw=False, fast=True) # docstring
                 })
+            #TODO: sort completions here!
             return completions
         except:
             return []

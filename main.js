@@ -24,12 +24,13 @@
  */
 
 //TODO: fix double-lettering bug
-//TODO: put hints taht start with parameter upper than class, for example
-//TODO: run hints after dot
+//TODO: put hints that start with parameter upper than class, for example
 //TODO: styling, probably copy/paste from JShint
 //TODO: rewrite formatHint
 //TODO: put jump-to feature to the standart API
 //TODO: write docs utility?
+//TODO: add linter (use flake8)
+//TODO; enhance hint popping
 
 define(function (require, exports, module) {
     "use strict";
@@ -50,10 +51,14 @@ define(function (require, exports, module) {
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
         Mustache            = brackets.getModule("thirdparty/mustache/mustache"),
         prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
-        //GOTO                = 'brackets-python-tools.goto',
-        //gotoKey             = 'Ctrl-Alt-j',
         MY_COMMAND_ID       = "python-tools.settings";
     
+    var KEYWORDS = ['False', 'None', 'True', 'and', 'as', 'assert', 'break',
+                    'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
+                    'finally', 'for', 'from', 'global', 'if', 'import', 'in',
+                    'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise',
+                    'return', 'try', 'while', 'with', 'yield'];
+
     prefs.definePreference("path_to_python", "string", "python3");
     
     var pythonDomain    = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain")),
@@ -119,38 +124,18 @@ define(function (require, exports, module) {
                 last: hint.complete
             },
             'docstring': _shorten(hint.docstring.trim(), 250),
-            'description': hint.description
+            'description': _shorten(hint.description, 100)
         }));
-        $fhint.data = hint.name;
+        $fhint.data = hint;
         return $fhint;
-
-        /*
-
-        var $fhint = $('<span>').addClass('python-tools-hint');
-        var matched_part = $("<b>").text(hint.name.slice(0, query.length));
-        $fhint.append(matched_part).append(hint.complete);
-
-        var circle_icon = $('<span>').text('i').addClass("link");
-        if (hint.docstring.trim() === '') {
-            circle_icon.attr('title', hint.docstring); //TODO: redo docs!
-        }
-
-        circle_icon.appendTo($fhint);
-        $fhint.data = hint.name; //!!!
-
-        if (hint.description.length !== 0) {
-            $('<span>').text(hint.description).appendTo($fhint).addClass("description");
-        }
-
-        return $fhint;*/
     }
 
     function _getPython() {
         return 'python3'; //TODO
     }
 
-    function _continueHinting() {
-        return false;  //TODO
+    function _continueHinting(hint) {
+        return false;
     }
 
     PyHints.prototype.getHints = function(implicitChar) {
@@ -162,11 +147,11 @@ define(function (require, exports, module) {
             pypath   = _getPython(),
             deferred = new $.Deferred(),
             query    = {
-                source: DocumentManager.getCurrentDocument().getText(),
-                line:   cursor.line,
-                column: cursor.ch,
-                path:   editor.document.file._path,
-                type:  'autocomplete'
+                source: DocumentManager.getCurrentDocument().getText(), // file contents
+                line:   cursor.line,                                    // line no., starting with 0
+                column: cursor.ch,                                      // column no.
+                path:   editor.document.file._path,                     // file path
+                type:  'autocomplete'                                   // type of query
             };
         pythonDomain.exec("pythonShell", JSON.stringify(query), pypath, pythonToolsPath)
             .done(function (result) {       // if successfull
@@ -198,12 +183,14 @@ define(function (require, exports, module) {
 
         var cursor = editor.getCursorPos(true),
             word = editor._codeMirror.findWordAt(cursor),
-            token_type = editor._codeMirror.getTokenTypeAt(cursor).substr(9),
+            token_type = editor._codeMirror.getTokenTypeAt(cursor),
             line = editor.document.getRange({line: word.anchor.line, ch: 0}, word.head);
+
+        token_type = token_type? token_type.substr(9) : null;              // strip python prefix
 
         var canGetHints = (["comment",
                             "string",
-                            "keyword"].indexOf(token_type) === -1) && // if not in comment or string
+                            "keyword"].indexOf(token_type) === -1) &&      // if not in comment or string
             (/\b((\w+[\w\-]*)|([.:;\[{(< ]+))$/g).test(implicitChar) &&    // looks like select last word in a line
             (implicitChar.trim() !== '')                                   // if this last word is not empty
                                                                            // see https://regex101.com/r/GFQNbp/1
@@ -211,11 +198,11 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.insertHint = function (hint) {
-        hint = hint.data;
+        hint = hint.data.name;
         var currentDoc = DocumentManager.getCurrentDocument();
         var word = getQuery('wordObj');
         currentDoc.replaceRange(hint, word.start, word.end);
-        return _continueHinting();
+        return _continueHinting(hint);
     };
 
     /*
