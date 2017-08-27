@@ -126,7 +126,7 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.insertHint = function (hint) {
-        hintName = hint.data.name;
+        var hintName = hint.data.name;
         var currentDoc = DocumentManager.getCurrentDocument();
         var word = getQuery('wordObj');
         currentDoc.replaceRange(hintName, word.start, word.end);
