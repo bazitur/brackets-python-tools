@@ -61,11 +61,7 @@ define(function (require, exports, module) {
 
         Dialogs.addLinkTooltips(this.$wrapperDiv);
 
-        this._sizeEditorToContent   = this._sizeEditorToContent.bind(this);
-        this._handleWheelScroll     = this._handleWheelScroll.bind(this);
-
         this.$scroller = this.$wrapperDiv.find(".scroller");
-        this.$scroller.on("mousewheel", this._handleWheelScroll);
         this._onKeydown = this._onKeydown.bind(this);
     }
 
@@ -75,45 +71,6 @@ define(function (require, exports, module) {
 
     InlineDocsViewer.prototype.$wrapperDiv = null;
     InlineDocsViewer.prototype.$scroller = null;
-
-    /**
-     * Handle scrolling.
-     *
-     * @param {Event} event Keyboard event or mouse scrollwheel event
-     * @param {boolean} scrollingUp Is event to scroll up?
-     * @param {DOMElement} scroller Element to scroll
-     * @return {boolean} indication whether key was handled
-     */
-    InlineDocsViewer.prototype._handleScrolling = function (event, scrollingUp, scroller) {
-        // We need to block the event from both the host CodeMirror code (by stopping bubbling) and the
-        // browser's native behavior (by preventing default). We preventDefault() *only* when the docs
-        // scroller is at its limit (when an ancestor would get scrolled instead); otherwise we'd block
-        // normal scrolling of the docs themselves.
-        event.stopPropagation();
-        if (scrollingUp && scroller.scrollTop === 0) {
-            event.preventDefault();
-            return true;
-        } else if (!scrollingUp && scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight) {
-            event.preventDefault();
-            return true;
-        }
-
-        return false;
-    };
-
-    /** Don't allow scrollwheel/trackpad to bubble up to host editor - makes scrolling docs painful */
-    InlineDocsViewer.prototype._handleWheelScroll = function (event) {
-        var scrollingUp = (event.originalEvent.wheelDeltaY > 0),
-            scroller = event.currentTarget;
-
-        // If content has no scrollbar, let host editor scroll normally
-        if (scroller.clientHeight >= scroller.scrollHeight) {
-            return;
-        }
-
-        this._handleScrolling(event, scrollingUp, scroller);
-    };
-
 
     /**
      * Convert keydown events into navigation actions.
