@@ -25,12 +25,10 @@
 
 //TODO: fix double-lettering bug
 //TODO: put hints that start with parameter upper than class, for example
-//TODO: styling, probably copy/paste from JShint
-//TODO: rewrite formatHint
 //TODO: put jump-to feature to the standart API
-//TODO: write docs utility?
 //TODO: add linter (use flake8)
-//TODO; enhance hint popping
+//TODO: enhance hint popping
+//TODO: write my own rst parser!
 
 define(function (require, exports, module) {
     "use strict";
@@ -102,6 +100,7 @@ define(function (require, exports, module) {
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
         EditorManager.registerInlineDocsProvider(python_docs);
 
-        ExtensionUtils.loadStyleSheet(module, "styles/python-tools.less");
+        ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
+        ExtensionUtils.loadStyleSheet(module, "styles/docs.less");
     });
 });

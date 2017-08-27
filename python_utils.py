@@ -24,6 +24,7 @@ from json import loads, dumps
 from docutils.core import publish_parts
 import sys
 import os
+from tinyhtmlwriter import format_docs
 sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
@@ -77,7 +78,7 @@ class PythonTools:
                     "name":        completion.name,        # full completion
                     "type":        completion.type,        # type of completion
                     "description": completion.description, # not that clear
-                    "docstring":   completion.docstring(raw=False, fast=True) # docstring
+                    "docstring":   completion.docstring(raw=True, fast=True) # docstring
                 })
             #TODO: sort completions here!
             return completions
@@ -92,14 +93,14 @@ class PythonTools:
             path   = request["path"]
         )
 
-        if len(script.completions()) != 1:
+        if len(script.completions()) < 1:
             return {"docs": None}
         completion = script.completions()[0]
-        docstring = completion.docstring(raw=False, fast=False)
-        if not docstring.strip():
+        docstring = completion.docstring(raw=True, fast=False)
+        if not docstring:
             return {"docs": None}
         return {
-            "docs": docstring,
+            "docs": format_docs(docstring),
             "title": completion.full_name
         }
 

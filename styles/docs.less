@@ -1,0 +1,44 @@
+.python-tools-docs {
+    margin: 5px 40px;
+    font-family: SourceSansPro;
+    font-size: 14px;
+    cursor: auto;
+    -moz-user-select: text;
+    -webkit-user-select: text;
+
+    .scroller {
+        &:focus {
+            outline: none;
+        }
+        max-height: 300px;
+        overflow-y: scroll;
+    }
+
+    .docs {
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+        }
+        h1 { font-size: 1.1428em; /*16px*/ }
+        h2 { font-size: 1.05em; }
+        h3 { font-size: 1em; }
+        h4 { font-size: 0.95em; }
+        h5 { font-size: 0.9em; }
+        h6 { font-size: 0.85em; }
+        code, pre {
+            font-family: SourceCodePro;
+            background: none;   //REMOVE
+            font-size: 100%;
+        }
+        pre {
+            padding: 5px 0 5px 10px;
+            white-space: pre-wrap;
+        }
+        p {
+            padding: 0;
+            margin: 0;
+        }
+        b {
+            font-weight: 500;
+        }
+    }
+}
