@@ -27,7 +27,9 @@
 //TODO: put hints that start with parameter upper than class, for example
 //TODO: put jump-to feature to the standart API
 //TODO: add linter (use flake8)
+//TODO: add nice extended definition, like the first line in formatted docs
 //TODO: enhance hint popping
+//TODO: enhance checking whether can get hint (e.g. no hint on empty space)
 //TODO: write my own rst parser!
 
 define(function (require, exports, module) {
@@ -68,7 +70,7 @@ define(function (require, exports, module) {
             })
             .fail(function(error) {
                 console.error("Python Tools Error: " + error);
-                deferred.reject();
+                deferred.reject(error);
             });
         return deferred;
     }

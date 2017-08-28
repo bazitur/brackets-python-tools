@@ -32,8 +32,7 @@ py__package__()                        Only on modules. For the import system.
 py__path__()                           Only on modules. For the import system.
 py__get__(call_object)                 Only on instances. Simulates
                                        descriptors.
-py__doc__(include_call_signature:      Returns the docstring for a context.
-          bool)
+py__doc__(include_call_signature:bool) Returns the docstring for a context.
 ====================================== ========================================
 
 """

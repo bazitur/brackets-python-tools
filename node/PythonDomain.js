@@ -35,8 +35,9 @@
         });
 
         child.stderr.on("data", function (error) {
-            stderr = error.toString();
-            callBack(stderr, null);
+            var formattedError = error.toString();
+            console.error("Python Domain Error: " + formattedError);
+            callBack(formattedError, null);
         });
 
         child.stdin.write(data);

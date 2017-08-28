@@ -691,8 +691,8 @@ class HTMLTranslator(n.NodeVisitor, object):
         self.body.append('</span>')
 
 def format_docs(rst):
-    writer = Writer()
     # store full html output to html variable
+    writer = Writer()
     html = publish_string(source=rst,
                           writer=writer,
                           writer_name='html',

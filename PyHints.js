@@ -26,7 +26,7 @@ define(function (require, exports, module) {
                 start--;
             }
         }
-        if (cond === 'query') {
+        if (cond === 'query') { //REMOVE: no uses with cond == "query
             return line.substring(start, end);
         } else {
             var word = {
@@ -50,16 +50,17 @@ define(function (require, exports, module) {
     function formatHint(hint, query) {
         var $fhint = $(Mustache.render(hintTemplate, {
             'hint': {
-                first: hint.name.slice(0, query.length),
-                last: hint.complete
+                first: hint.name.slice(0, -hint.complete.length),
+                last:  hint.complete
             },
-            'docstring': _shorten(hint.docstring.trim(), 250),
-            'description': _shorten(hint.description, 100)
+            'docstring': hint.docstring.trim(),
+            'description': hint.description,
+            'type': hint.type,
+            'help': _shorten(hint.docstring, 500)
         }));
         $fhint.data = hint;
         return $fhint;
     }
-
     function _continueHinting(hint) {
         return false;
     }
@@ -96,7 +97,7 @@ define(function (require, exports, module) {
         pythonAPI(query)
             .done(function (hintList) {       // if successfull
                 var query = getQuery.call(this, 'query');
-
+                //TODO: dont'show single empty hint, like in `from math import pi|`
                 var $hintArray = hintList.map(function(hint) {
                     return formatHint(hint, query);
                 });
@@ -109,7 +110,7 @@ define(function (require, exports, module) {
                 deferred.resolve(resolve_obj);
             })
             .fail(function (err) {          // if error
-                console.error('Error: ' + err);
+                console.error('Python Hints Error: ' + err);
             });
         return deferred;
     }
@@ -124,7 +125,6 @@ define(function (require, exports, module) {
                            (implicitChar.trim() !== '')
         return canGetHints;
     }
-
     PyHints.prototype.insertHint = function (hint) {
         var hintName = hint.data.name;
         var currentDoc = DocumentManager.getCurrentDocument();

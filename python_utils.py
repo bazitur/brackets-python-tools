@@ -29,6 +29,10 @@ sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
+type_map = {
+    "param": 0
+}
+
 class PythonTools:
     def __init__(self):
         pass
@@ -40,11 +44,11 @@ class PythonTools:
         """
         return loads(sys.stdin.readline())
 
-    def output(self, responce):
+    def output(self, response):
         """
-        Serializes JSON responce and writes it to a stdout.
+        Serializes JSON response and writes it to a stdout.
         """
-        sys.stdout.write(dumps(responce))
+        sys.stdout.write(dumps(response))
         sys.stdout.write('\n')
 
     def process(self, request):
@@ -63,21 +67,25 @@ class PythonTools:
         else:
             return processor(request)
 
-    def autocomplete(self, request):
-        script = jedi.api.Script(
+    def _script_from_request(self, request):
+        return jedi.api.Script(
             source = request["source"],
             line   = request["line"] + 1, # Jedi starts line count with 1
             column = request["column"],
             path   = request["path"]
         )
+
+    def autocomplete(self, request):
+        script = self._script_from_request(request)
         completions = []
         try:
             for completion in script.completions():
+                docstring = completion.docstring(raw=True, fast=False)
                 completions.append({
                     "complete":    completion.complete,    # completion, only ending
                     "name":        completion.name,        # full completion
                     "type":        completion.type,        # type of completion
-                    "description": completion.description, # not that clear
+                    "description": completion.description,
                     "docstring":   completion.docstring(raw=True, fast=True) # docstring
                 })
             #TODO: sort completions here!
@@ -86,12 +94,7 @@ class PythonTools:
             return []
 
     def get_documentation(self, request):
-        script = jedi.api.Script(
-            source = request["source"],
-            line   = request["line"] + 1, # Jedi starts line count with 1
-            column = request["column"],
-            path   = request["path"]
-        )
+        script = self._script_from_request(request)
 
         if len(script.completions()) < 1:
             return {"docs": None}

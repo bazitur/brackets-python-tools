@@ -1,32 +1,44 @@
-.python-tools-hint {
+.python-hint {
     width: 300px;
     display: inline-block;
     font-size: 14px;
     font-weight: 400;
 
-    .description {
-        display: block;
-        color: #6495ed;
-        word-wrap: break-word;
-        white-space: normal;
-        font-size: 13px;
+    .pyhint-fix {
+        overflow-y: hidden;
     }
 
-    .link {
-        display: block;
+    .pyhint-title {
+        float: left;
+        b {
+            font-weight: bolder;
+        }
+    }
+    .pyhint-pydoc {
+        display: none;
+        //color: grey;
+        word-wrap: break-word;
+        white-space: normal;
+        box-sizing: border-box;
+        float: left;
+        clear: left;
+        max-height: 2em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1em;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .pyhint-type {
         float: right;
-        width: 18px;
-        height: 18px;
-        font-size: 15px;
-        line-height: 17px;
-        font-family: SourceSansPro-Semibold;
+        color: cornflowerblue;
         font-style: italic;
-        text-align: center;
-        font-weight: 900;
-        color: #fff;
-        background-color: #2ea56c;
-        border-color: #177F42;
-        border-radius: 16px;
-        cursor: pointer;
+    }
+}
+
+.highlight {
+    .pyhint-pydoc {
+        display: -webkit-box;
     }
 }

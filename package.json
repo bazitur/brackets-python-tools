@@ -1,9 +1,14 @@
 {
-    "name": "bazitur.brackets-python-tools",
-    "title": "Python Jedi Brackets",
-    "description": "Tools that will make your Brackets a full-featured Python IDE",
-    "homepage": "https://github.com/bazitur/brackets-python-tools",
-    "version": "0.1.0",
+    "name": "brackets-python-tools",
+    "title": "Brackets Python Tools",
+    "description": "Tools that will make Brackets your favourite Python IDE, featuring smart autocompletion, quick docs and goto definition.",
+    "homepage": "https://bazitur.github.io/brackets-python-tools",
+    "version": "0.9.0",
     "author": "Basil Miturich",
-    "license": "MIT"
+    "license": "MIT",
+    "keywords": [
+        "python",
+        "quickdocs",
+        "autocompletion"
+    ]
 }
