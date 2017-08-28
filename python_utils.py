@@ -29,9 +29,6 @@ sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
-type_map = {
-    "param": 0
-}
 
 class PythonTools:
     def __init__(self):
@@ -59,13 +56,18 @@ class PythonTools:
         dispatches = {
             "goto": self.goto_definition,
             "docs": self.get_documentation,
+            "setup": self.setup,
             "autocomplete": self.autocomplete
         }
         processor = dispatches.get(request["type"], None)
         if processor is None:
             raise Error('Not Achievable')
         else:
-            return processor(request)
+            try:
+                return processor(request)
+            except Exception:
+                #TODO
+                raise
 
     def _script_from_request(self, request):
         return jedi.api.Script(
@@ -75,21 +77,29 @@ class PythonTools:
             path   = request["path"]
         )
 
+    def setup(self, request):
+        """
+        Set up initial settings.
+        """
+        raise NotImplemented
+
     def autocomplete(self, request):
         script = self._script_from_request(request)
         completions = []
         try:
             for completion in script.completions():
-                docstring = completion.docstring(raw=True, fast=False)
+                docstring = completion.docstring(raw=True, fast=True)
+                if completion.type == "keyword":
+                    docstring = ""
                 completions.append({
                     "complete":    completion.complete,    # completion, only ending
                     "name":        completion.name,        # full completion
                     "type":        completion.type,        # type of completion
                     "description": completion.description,
-                    "docstring":   completion.docstring(raw=True, fast=True) # docstring
+                    "docstring":   docstring # docstring
                 })
             #TODO: sort completions here!
-            return completions
+            return completions[:50] #TODO: replace 50 with brackets `maxCodeHints` setting
         except:
             return []
 

@@ -25,12 +25,16 @@
 
 //TODO: fix double-lettering bug
 //TODO: put hints that start with parameter upper than class, for example
-//TODO: put jump-to feature to the standart API
+//TODO: put goto definition feature to the standart API
 //TODO: add linter (use flake8)
-//TODO: add nice extended definition, like the first line in formatted docs
+//TODO: add nice extended definition with parameters, like the first line in formatted docs
 //TODO: enhance hint popping
-//TODO: enhance checking whether can get hint (e.g. no hint on empty space)
-//TODO: write my own rst parser!
+//TODO: enhance docutils
+//TODO: show only defined in file or in module completions
+//TODO: dont's show protected and private members unless stated explicitly
+//TODO: always show autocompletions in import statement
+//      like, always after `from ... import |`
+//TODO: put all python code in a single directory
 
 define(function (require, exports, module) {
     "use strict";

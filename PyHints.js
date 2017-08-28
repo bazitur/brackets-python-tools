@@ -116,14 +116,23 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.hasHints = function (editor, implicitChar) {
+        var token_type = editor._codeMirror.getTokenTypeAt(editor.getCursorPos(true));
+        token_type = token_type? token_type.substr(9) : null;  // strip python prefix
+
+        // if not in forbidden token type
+        var canGetHints = (["comment", "string", "string-2"].indexOf(token_type)===-1)
+        if (!canGetHints) return false;
+
         if (implicitChar === null || implicitChar === ".") return true;
 
-        var token_type = editor._codeMirror.getTokenTypeAt(editor.getCursorPos(true));
-        token_type = token_type? token_type.substr(9) : null;              // strip python prefix
+        var line = editor.document.getLine(editor.getCursorPos(true).line),
+            // get current line as string
+            test_regexp = /[A-Za-z_][A-Za-z_0-9]{1,}$/;
+            // https://regex101.com/r/2LeBbK/1
 
-        var canGetHints = (["comment", "string", "keyword"].indexOf(token_type)===-1) && // if not in comment or string
-                           (implicitChar.trim() !== '')
-        return canGetHints;
+        if (test_regexp.test(line)) return true;
+
+        return false;
     }
     PyHints.prototype.insertHint = function (hint) {
         var hintName = hint.data.name;
