@@ -1,6 +1,6 @@
 (function() {
     "use strict";
-    var child_process = require("child_process");
+    var spawn = require("child_process").spawn;
 
     /* from https://gist.github.com/TooTallNate/1785026 */
     //TODO: child restart is broken
@@ -28,10 +28,11 @@
 
         if (!child) {
             // spawn process if not exists. Else use the old one
-            child = child_process.spawn(pyPath, ['-u', pyScript]);
+            child = spawn(pyPath, ['-u', pyScript]);
             emitLines(child.stdout);
         }
-
+        //TODO: finally understood where do tons of event handlers come from
+        //TODO: separate process cretion and querying
         child.stdout.on("line", function (line) {
             callBack(null, line);
         });
@@ -46,6 +47,37 @@
         child.stdin.write('\n');
     }
 
+    function cmdFlake8(pyPath, fileName, callBack) {
+        var result = [], stderr = '';
+        var args = ['-m', 'flake8', '--exit-zero',
+                    "--format='%(row)d||%(col)d||%(code)s||%(text)s'", fileName];
+        var flake8 = spawn(pyPath, args);
+
+        flake8.stdout.on('data', function (data) {
+            data = data.toString().slice(1, -2);
+            data.split("'\n'").forEach(function (line) {
+                if (line && line.trim()) {
+                    line = line.split("||");
+                    result.push({
+                        row:    line[0],
+                        column: line[1],
+                        code:   line[2],
+                        text:   line[3]
+                    });
+                }
+            });
+        });
+
+        flake8.stderr.on('data', function (data) {
+            stderr = data.toString();
+        });
+
+        flake8.on('close', function (code) {
+            if (code === 0) callBack(null, result);
+            else callBack(stderr, null);
+        });
+    }
+
     function init(domainManager) {
         if (!domainManager.hasDomain("python-tools")) {
             domainManager.registerDomain("python-tools", {major: 0, minor: 1});
@@ -55,6 +87,12 @@
             "pythonShell",        // command name
             cmdPythonShell,       // command handler function
             true                  // this command is asynchronous in Node
+        );
+        domainManager.registerCommand(
+            "python-tools",
+            "Flake8",
+            cmdFlake8,
+            true
         );
     }
 

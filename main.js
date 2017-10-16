@@ -42,6 +42,7 @@ define(function (require, exports, module) {
         EditorManager       = brackets.getModule("editor/EditorManager"),
         DocumentManager     = brackets.getModule("document/DocumentManager"),
         CodeHintManager     = brackets.getModule("editor/CodeHintManager"),
+        CodeInspection      = brackets.getModule("language/CodeInspection"),
         NodeDomain          = brackets.getModule("utils/NodeDomain"),
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
         Dialogs             = brackets.getModule("widgets/Dialogs"),
@@ -50,7 +51,8 @@ define(function (require, exports, module) {
         MY_COMMAND_ID       = "python-tools.settings";
     
     var PyHints = require("PyHints"),
-        PyDocs  = require("PyDocs");
+        PyDocs  = require("PyDocs"),
+        PyLint  = require("PyLint");
 
     var pythonToolsPath = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
 
@@ -101,10 +103,15 @@ define(function (require, exports, module) {
     AppInit.appReady(function () {
         
         var python_hints = new PyHints(pythonAPI),
-            python_docs  = new PyDocs(pythonAPI);
+            python_docs  = new PyDocs(pythonAPI),
+            python_lint  = new PyLint(pythonDomain, pyPath);
 
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
         EditorManager.registerInlineDocsProvider(python_docs);
+        CodeInspection.register("python", {
+            name: 'Flake8',
+            scanFileAsync: python_lint.scanFileAsync
+        });
 
         ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
         ExtensionUtils.loadStyleSheet(module, "styles/docs.less");
