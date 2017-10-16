@@ -102,7 +102,7 @@ class PythonTools:
                     "name":        completion.name,        # full completion
                     "type":        completion.type,        # type of completion
                     "description": completion.description,
-                    "docstring":   docstring # docstring
+                    "docstring":   docstring
                 })
             #TODO: sort completions here!
             return completions[:50] #TODO: replace 50 with brackets `maxCodeHints` setting
@@ -112,17 +112,24 @@ class PythonTools:
     def get_documentation(self, request):
         script = self._script_from_request(request)
 
-        completions = script.completions()
-        if len(completions) < 1:
-            return {"docs": None}
-        completion = completions[0]
-        docstring = completion.docstring(raw=True, fast=False)
-        if not docstring:
-            return {"docs": None}
-        return {
-            "docs": format_docs(docstring),
-            "title": completion.full_name
+        response = {
+            "docs": None,
+            "title": None
         }
+
+        completions = script.completions()
+        definitions = script.goto_definitions()
+
+        if len(completions) > 0:
+            completion = completions[0]
+            docstring = completion.docstring(raw=False, fast=False)
+            if '\n\n' in docstring:
+                title, body = docstring.split('\n\n', maxsplit=1)
+                if body.strip():
+                    response["docs"] = format_docs(body)
+                    response["title"] = title
+
+        return response
 
     def goto_definition(self, request):
         try:

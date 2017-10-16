@@ -23,12 +23,13 @@
  *
  */
 
-//TODO: fix double-lettering bug
+//TODO: fix double-lettering bug - kinda disappeared?
 //TODO: put hints that start with parameter upper than class, for example
 //TODO: put goto definition feature to the standart API
 //TODO: add linter (use flake8)
 //TODO: add nice extended definition with parameters, like the first line in formatted docs
 //TODO: enhance docutils
+//TODO: fix sphinx' special roles uses in inline documentation
 //TODO: show only defined in file or in module completions
 //TODO: dont's show protected and private members unless stated explicitly
 //TODO: put all python code in a single directory
