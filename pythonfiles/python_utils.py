@@ -29,6 +29,9 @@ sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
+jedi.settings.case_insensitive_completion = False
+#TODO: add case sensitivity to settings
+
 class PythonToolsError(Exception):
     """ Class for python tools errors """
     pass
