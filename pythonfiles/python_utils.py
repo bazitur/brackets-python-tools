@@ -29,6 +29,9 @@ sys.path.append(os.path.dirname(__file__))
 import jedi
 sys.path.pop(0) # remove jedi from completion
 
+class PythonToolsError(Exception):
+    """ Class for python tools errors """
+    pass
 
 class PythonTools:
     def __init__(self):
@@ -57,17 +60,17 @@ class PythonTools:
             "goto": self.goto_definition,
             "docs": self.get_documentation,
             "setup": self.setup,
+            "code_hint": self.code_hint,
             "autocomplete": self.autocomplete
         }
         processor = dispatches.get(request["type"], None)
         if processor is None:
-            raise Error('Not Achievable')
+            raise PythonToolsError('Unknown command "%s"' % request["type"])
         else:
             try:
                 return processor(request)
-            except Exception:
-                #TODO
-                raise
+            except Exception as E:
+                raise #TODO
 
     def _script_from_request(self, request):
         return jedi.api.Script(
@@ -106,9 +109,10 @@ class PythonTools:
     def get_documentation(self, request):
         script = self._script_from_request(request)
 
-        if len(script.completions()) < 1:
+        completions = script.completions()
+        if len(completions) < 1:
             return {"docs": None}
-        completion = script.completions()[0]
+        completion = completions[0]
         docstring = completion.docstring(raw=True, fast=False)
         if not docstring:
             return {"docs": None}
@@ -139,6 +143,10 @@ class PythonTools:
             "is_built_in": is_built_in
         }]
         return response
+
+    def code_hint(self, request):
+
+        return {}
 
     def watch(self):
         """

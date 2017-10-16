@@ -3,6 +3,7 @@
     var child_process = require("child_process");
 
     /* from https://gist.github.com/TooTallNate/1785026 */
+    //TODO: child restart is broken
     function emitLines(stream) {
         var backlog = '';
         stream.on('data', function (data) {
@@ -22,11 +23,12 @@
         });
     }
     var child = null;
-    function cmdPythonShell(data, setpy, pythonPath, callBack) {
+    function cmdPythonShell(data, pyPath, pyScript, callBack) {
         var stdout = '', stderr = '', chunks = [];
 
-        if (!child) { // spawn process if not exists. Else use the old one
-            child = child_process.spawn(setpy, ['-u', pythonPath]);
+        if (!child) {
+            // spawn process if not exists. Else use the old one
+            child = child_process.spawn(pyPath, ['-u', pyScript]);
             emitLines(child.stdout);
         }
 

@@ -28,13 +28,11 @@
 //TODO: put goto definition feature to the standart API
 //TODO: add linter (use flake8)
 //TODO: add nice extended definition with parameters, like the first line in formatted docs
-//TODO: enhance hint popping
 //TODO: enhance docutils
 //TODO: show only defined in file or in module completions
 //TODO: dont's show protected and private members unless stated explicitly
-//TODO: always show autocompletions in import statement
-//      like, always after `from ... import |`
 //TODO: put all python code in a single directory
+//TODO: stabilize API
 
 define(function (require, exports, module) {
     "use strict";
@@ -48,11 +46,12 @@ define(function (require, exports, module) {
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
         prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
-        pythonToolsPath     = ExtensionUtils.getModulePath(module, 'python_utils.py'),
         MY_COMMAND_ID       = "python-tools.settings";
     
     var PyHints = require("PyHints"),
         PyDocs  = require("PyDocs");
+
+    var pythonToolsPath = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
 
     prefs.definePreference("path_to_python", "string", "python3");
     var pyPath = "python3", //TODO
@@ -73,7 +72,7 @@ define(function (require, exports, module) {
                 deferred.resolve(deserializedResponse);
             })
             .fail(function(error) {
-                console.error("Python Tools Error: " + error);
+                console.error("Python Tools Error @ main.js: " + error);
                 deferred.reject(error);
             });
         return deferred;

@@ -26,7 +26,7 @@ define(function (require, exports, module) {
                 start--;
             }
         }
-        if (cond === 'query') { //REMOVE: no uses with cond == "query
+        if (cond === 'query') {
             return line.substring(start, end);
         } else {
             var word = {
@@ -82,6 +82,7 @@ define(function (require, exports, module) {
     }
 
     PyHints.prototype.getHints = function(implicitChar) {
+
         var editor   = EditorManager.getActiveEditor(),
             cursor   = editor.getCursorPos(true),
             word     = editor._codeMirror.findWordAt(cursor),
@@ -94,6 +95,7 @@ define(function (require, exports, module) {
                 path:   editor.document.file._path,                     // file path
                 type:   'autocomplete'                                  // type of query
             };
+        if (!this.hasHints(editor, implicitChar)) return null;
         pythonAPI(query)
             .done(function (hintList) {       // if successfull
                 var query = getQuery.call(this, 'query');
@@ -111,35 +113,36 @@ define(function (require, exports, module) {
             })
             .fail(function (err) {          // if error
                 console.error('Python Hints Error: ' + err);
+                deferred.reject(err);
             });
         return deferred;
     }
 
     PyHints.prototype.hasHints = function (editor, implicitChar) {
-        var token_type = editor._codeMirror.getTokenTypeAt(editor.getCursorPos(true));
+        var cursor = editor.getCursorPos(true),
+            token_type = editor._codeMirror.getTokenTypeAt(cursor);
         token_type = token_type? token_type.substr(9) : null;  // strip python prefix
 
         // if not in forbidden token type
         var canGetHints = (["comment", "string", "string-2"].indexOf(token_type)===-1)
         if (!canGetHints) return false;
 
-        if (implicitChar === null || implicitChar === ".") return true;
+        if (implicitChar === null) return true;
 
-        var line = editor.document.getLine(editor.getCursorPos(true).line),
-            // get current line as string
-            test_regexp = /[A-Za-z_][A-Za-z_0-9]{1,}$/;
-            // https://regex101.com/r/2LeBbK/1
+        var line = editor.document.getRange({'ch': 0, 'line': cursor.line}, cursor),
+            test_regexp = /[A-Za-z_][A-Za-z_0-9]{2,}$/;
 
         if (test_regexp.test(line)) return true;
 
         return false;
     }
     PyHints.prototype.insertHint = function (hint) {
-        var hintName = hint.data.name;
-        var currentDoc = DocumentManager.getCurrentDocument();
-        var word = getQuery('wordObj');
-        currentDoc.replaceRange(hintName, word.start, word.end);
-        return false; //TODO
+        var completion = hint.data.complete,
+            editor = EditorManager.getActiveEditor(),
+            cursor = editor.getCursorPos(true),
+            doc    = editor.document;
+        doc.replaceRange(completion, cursor); // insert hint after cursor
+        return false;
     };
 
     module.exports = PyHints;
