@@ -64,9 +64,11 @@ define(function (require, exports, module) {
             .done(function (hintList) {       // if successfull
                 //var query = getQuery.call(this, 'query');
                 //TODO: dont'show single empty hint, like in `from math import pi|`
-                var $hintArray = hintList.map(function(hint) {
-                    return formatHint(hint);
-                });
+                var $hintArray = hintList
+                    .filter(function (hint) {
+                        return hint.complete !== '';
+                    })
+                    .map(formatHint);
                 var resolve_obj = {
                     hints: $hintArray,
                     match: null,
@@ -94,7 +96,7 @@ define(function (require, exports, module) {
         if (!canGetHints) return false;
 
         var line = editor.document.getRange({'ch': 0, 'line': cursor.line}, cursor),
-            test_regexp = /[A-Za-z_][A-Za-z_0-9]{2,}$/;
+            test_regexp = /[A-Za-z_][A-Za-z_0-9]{1,}$/;
 
         if (test_regexp.test(line)) return true;
 

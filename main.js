@@ -26,17 +26,17 @@
 //TODO: fix double-lettering bug - kinda disappeared?
 //TODO: put hints that start with parameter upper than class, for example
 //TODO: put goto definition feature to the standart API
-//TODO: add linter (use flake8)
-//TODO: add nice extended definition with parameters, like the first line in formatted docs
 //TODO: enhance docutils
 //TODO: fix sphinx' special roles uses in inline documentation
-//TODO: show only defined in file or in module completions
-//TODO: dont's show protected and private members unless stated explicitly
+//TODO: show only defined in file or in module completions - kinda impossible?
+//TODO: don't show protected and private members unless stated explicitly
 //TODO: put all python code in a single directory
 //TODO: stabilize API
 
 define(function (require, exports, module) {
     "use strict";
+
+    var EXTENSION_NAME = "bazitur.python-tools";
 
     var AppInit             = brackets.getModule("utils/AppInit"),
         EditorManager       = brackets.getModule("editor/EditorManager"),
@@ -47,12 +47,13 @@ define(function (require, exports, module) {
         ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
         Dialogs             = brackets.getModule("widgets/Dialogs"),
         PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
-        prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools"),
-        MY_COMMAND_ID       = "python-tools.settings";
+
+        prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools");
     
     var PyHints = require("PyHints"),
         PyDocs  = require("PyDocs"),
-        PyLint  = require("PyLint");
+        PyLint  = require("PyLint"),
+        PyGoto  = require("PyGoto");
 
     var pythonToolsPath = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
 
@@ -75,7 +76,7 @@ define(function (require, exports, module) {
                 deferred.resolve(deserializedResponse);
             })
             .fail(function(error) {
-                console.error("Python Tools Error @ main.js: " + error);
+                console.error("Python Tools Error while using standart python API: " + error);
                 deferred.reject(error);
             });
         return deferred;
@@ -104,12 +105,16 @@ define(function (require, exports, module) {
         
         var python_hints = new PyHints(pythonAPI),
             python_docs  = new PyDocs(pythonAPI),
-            python_lint  = new PyLint(pythonDomain, pyPath);
+            python_lint  = new PyLint(pythonDomain, pyPath),
+            python_goto  = new PyGoto(pythonAPI).goto;
+        //NOTICE: EditorManager requires jump to definition provider to be a function.
+        // Thus, passing method to EditorManager.
 
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
         EditorManager.registerInlineDocsProvider(python_docs);
+        EditorManager.registerJumpToDefProvider(python_goto);
         CodeInspection.register("python", {
-            name: 'Flake8',
+            name: 'Python lint',
             scanFileAsync: python_lint.scanFileAsync
         });
 

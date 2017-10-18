@@ -52,7 +52,7 @@ class PythonTools:
         Serializes JSON response and writes it to a stdout.
         """
         sys.stdout.write(dumps(response))
-        sys.stdout.write('\n')
+        sys.stdout.write("\n")
 
     def process(self, request):
         """
@@ -118,13 +118,13 @@ class PythonTools:
         }
 
         completions = script.completions()
-        definitions = script.goto_definitions()
+#        definitions = script.goto_definitions() #REMOVE
 
         if len(completions) > 0:
             completion = completions[0]
             docstring = completion.docstring(raw=False, fast=False)
-            if '\n\n' in docstring:
-                title, body = docstring.split('\n\n', maxsplit=1)
+            if "\n\n" in docstring:
+                title, body = docstring.split("\n\n", maxsplit=1)
                 if body.strip():
                     response["docs"] = format_docs(body)
                     response["title"] = title
@@ -137,22 +137,20 @@ class PythonTools:
                                      request["column"], request["path"])
             definitions = script.goto_definitions()
         except:
-            return []
+            return {"success": False}
 
-        if not definitions:
-            return []
+        if definitions:
+            definition = definitions[0]
+            is_built_in = definition.in_builtin_module()
+            if not is_built_in:
+                return {
+                    "path":    definition.module_path,
+                    "line":    definition.line,
+                    "column":  definition.column,
+                    "success": True
+                }
 
-        definition = definitions[0]
-        is_built_in = definition.in_builtin_module()
-        module_name = definition.module_name
-
-        response = [{
-            "module_path": definition.module_path,
-            "line":        definition.line,
-            "column":      definition.column,
-            "is_built_in": is_built_in
-        }]
-        return response
+        return {"success": False}
 
     def code_hint(self, request):
 
