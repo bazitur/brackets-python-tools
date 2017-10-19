@@ -7,7 +7,8 @@ define(function (require, exports, module) {
 
         hintTemplate    = require("text!templates/hint.html"),
         cache           = {},
-        pythonAPI       = null;
+        pythonAPI       = null,
+        counter         = null;
 
     // helpers
     function _shorten(str, length) {
@@ -51,6 +52,9 @@ define(function (require, exports, module) {
         var editor = cache['editor'];
         if (!this.hasHints(editor, implicitChar)) return null;
 
+        var localCounter = new Date().getTime();
+        counter = localCounter;
+
         var deferred = new $.Deferred(),
             cursor   = cache['cursor'],
             query    = {
@@ -62,8 +66,9 @@ define(function (require, exports, module) {
             };
         pythonAPI(query)
             .done(function (hintList) {       // if successfull
-                //var query = getQuery.call(this, 'query');
-                //TODO: dont'show single empty hint, like in `from math import pi|`
+                if (localCounter != counter)
+                    deferred.reject();
+
                 var $hintArray = hintList
                     .filter(function (hint) {
                         return hint.complete !== '';

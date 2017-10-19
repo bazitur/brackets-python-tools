@@ -32,9 +32,11 @@ sys.path.pop(0) # remove jedi from completion
 jedi.settings.case_insensitive_completion = False
 #TODO: add case sensitivity to settings
 
+
 class PythonToolsError(Exception):
     """ Class for python tools errors """
     pass
+
 
 class PythonTools:
     def __init__(self):
@@ -92,22 +94,19 @@ class PythonTools:
     def autocomplete(self, request):
         script = self._script_from_request(request)
         completions = []
-        try:
-            for completion in script.completions():
-                docstring = completion.docstring(raw=True, fast=True)
-                if completion.type == "keyword":
-                    docstring = ""
-                completions.append({
-                    "complete":    completion.complete,    # completion, only ending
-                    "name":        completion.name,        # full completion
-                    "type":        completion.type,        # type of completion
-                    "description": completion.description,
-                    "docstring":   docstring
-                })
-            #TODO: sort completions here!
-            return completions[:50] #TODO: replace 50 with brackets `maxCodeHints` setting
-        except:
-            return []
+        for completion in script.completions():
+            docstring = completion.docstring(raw=True, fast=True)
+            if completion.type == "keyword":
+                continue
+            completions.append({
+                "complete":    completion.complete,
+                "name":        completion.name,
+                "type":        completion.type,
+                "description": completion.description,
+                "docstring":   docstring
+            })
+        # TODO: sort completions here!
+        return completions[:50]  # TODO: replace 50 with `maxCodeHints`
 
     def get_documentation(self, request):
         script = self._script_from_request(request)

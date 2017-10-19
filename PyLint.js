@@ -6,6 +6,10 @@ define(function (require, exports, module) {
     var pythonDomain = null,
         pythonPath = null;
 
+    var WITH_GUTTERS = new Boolean(window.bracketsInspectionGutters);
+    if (!WITH_GUTTERS)
+        console.warn('No bracketsInspectionGutters found on window, gutters disabled.');
+
     function PyLint(pyDomain, pyPath) {
         pythonDomain = pyDomain;
         pythonPath = pyPath;
@@ -38,13 +42,11 @@ define(function (require, exports, module) {
                     aborted: false
                 }
 
-                if (window.bracketsInspectionGutters) {
+                if (WITH_GUTTERS) {
                     window.bracketsInspectionGutters.set(
                         'brackets-python-tools', fullPath, report, true
                         //was: EXTENSION_UNIQUE_NAME, fullPath, report, preferences.get('gutterMarks', projectRoot)
                     );
-                } else {
-                    console.error('No bracketsInspectionGutters found on window, gutters disabled.');
                 }
 
                 result.resolve(report);

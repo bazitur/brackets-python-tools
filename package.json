@@ -1,7 +1,7 @@
 {
     "name": "brackets-python-tools",
-    "title": "Brackets Python Tools",
-    "description": "Tools that will make Brackets your favourite Python IDE, featuring smart autocompletion, quick docs and goto definition.",
+    "title": "Python Tools",
+    "description": "A set of tools for Python 3 featuring smart autocompletion, quickdocs, goto definition, linting and more.",
     "homepage": "https://bazitur.github.io/brackets-python-tools",
     "version": "0.9.0",
     "author": "Basil Miturich",
@@ -9,6 +9,7 @@
     "keywords": [
         "python",
         "quickdocs",
-        "autocompletion"
+        "autocompletion",
+        "linting"
     ]
 }
