@@ -37,14 +37,6 @@ define(function (require, exports, module) {
      */
     function PyHints(pyAPI) {
         pythonAPI = pyAPI;
-
-        this.data = {   //REMOVE: not used anywhere?
-            source : '',
-            line :   '',
-            column : '',
-            path :   '',
-            type:    ''
-        };
     }
 
     PyHints.prototype.getHints = function(implicitChar) {

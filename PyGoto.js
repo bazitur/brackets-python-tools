@@ -29,7 +29,9 @@ define(function (require, exports, module) {
             if (response.success && isWithinProject(response.path)) {
                 CommandManager.execute(Commands.FILE_OPEN, {fullPath: response.path})
                     .done(function () {
-                        EditorManager.getActiveEditor().setCursorPos(response.line - 1, response.column, true);
+                        var currentEditor = EditorManager.getActiveEditor();
+                        currentEditor.setCursorPos(response.line-1, response.column, true);
+                        currentEditor.selectWordAt({line: response.line-1, ch: response.column});
                         result.resolve();
                     });
             } else {

@@ -72,10 +72,7 @@ class PythonTools:
         if processor is None:
             raise PythonToolsError('Unknown command "%s"' % request["type"])
         else:
-            try:
-                return processor(request)
-            except Exception as E:
-                raise #TODO
+            return processor(request)
 
     def _script_from_request(self, request):
         return jedi.api.Script(
@@ -89,7 +86,7 @@ class PythonTools:
         """
         Set up initial settings.
         """
-        raise NotImplemented
+        return {"OK": True}
 
     def autocomplete(self, request):
         script = self._script_from_request(request)
@@ -117,7 +114,6 @@ class PythonTools:
         }
 
         completions = script.completions()
-#        definitions = script.goto_definitions() #REMOVE
 
         if len(completions) > 0:
             completion = completions[0]
@@ -125,7 +121,11 @@ class PythonTools:
             if "\n\n" in docstring:
                 title, body = docstring.split("\n\n", maxsplit=1)
                 if body.strip():
-                    response["docs"] = format_docs(body)
+                    try:
+                        docs = format_docs(body)
+                    except:
+                        docs = body
+                    response["docs"] = docs
                     response["title"] = title
 
         return response
@@ -134,21 +134,25 @@ class PythonTools:
         try:
             script = jedi.api.Script(request["source"], request["line"] + 1,
                                      request["column"], request["path"])
-            definitions = script.goto_definitions()
+            assignments = list(script.goto_assignments())
+            definitions = list(script.goto_definitions())
         except:
             return {"success": False}
 
-        if definitions:
-            definition = definitions[0]
-            is_built_in = definition.in_builtin_module()
-            if not is_built_in:
-                return {
-                    "path":    definition.module_path,
-                    "line":    definition.line,
-                    "column":  definition.column,
-                    "success": True
-                }
+        if definitions and not definitions[0].in_builtin_module():
+            goto = definitions
+        elif assignments:
+            goto = assignments
+        else:
+            return {"success": False}
 
+        definition = goto[0]
+        return {
+            "path":    definition.module_path,
+            "line":    definition.line,
+            "column":  definition.column,
+            "success": True
+        }
         return {"success": False}
 
     def code_hint(self, request):

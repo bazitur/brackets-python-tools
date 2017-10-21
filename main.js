@@ -23,15 +23,11 @@
  *
  */
 
-//TODO: fix double-lettering bug - kinda disappeared?
 //TODO: put hints that start with parameter upper than class, for example
-//TODO: put goto definition feature to the standart API
 //TODO: enhance docutils
 //TODO: fix sphinx' special roles uses in inline documentation
 //TODO: show only defined in file or in module completions - kinda impossible?
 //TODO: don't show protected and private members unless stated explicitly
-//TODO: put all python code in a single directory
-//TODO: stabilize API
 
 define(function (require, exports, module) {
     "use strict";
@@ -117,6 +113,8 @@ define(function (require, exports, module) {
             name: 'Python lint',
             scanFileAsync: python_lint.scanFileAsync
         });
+
+        window.setTimeout(()=>{pythonAPI({"type": "setup"})}, 100);
 
         ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
         ExtensionUtils.loadStyleSheet(module, "styles/docs.less");
