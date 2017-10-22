@@ -38,11 +38,13 @@
         });
 
         child.stderr.on("data", function (error) {
-            var formattedError = error.toString();
-            console.error("Python Domain Error: " + formattedError);
-            callBack(formattedError, null);
+            stderr += error.toString();
         });
 
+        child.stderr.on("end", function (code) {
+            console.error("Python Domain Error: " + stderr);
+            callBack(stderr, null);
+        })
         child.stdin.write(data);
         child.stdin.write('\n');
     }

@@ -17,9 +17,9 @@ Additionally, you'll need:
     ~$ pip install jedi flake8
     ```
   - `docutils` module (optional) for docs rendering. It can be install with pip as well:
-  ```bash
-  ~$ pip install docutils
-  ```
+    ```bash
+    ~$ pip install docutils
+    ```
 
 ## Usage
 This Extension uses Python 3 interpreter in your path by default. You can customize interpreter either in Preferences File or in Python Tools tab.

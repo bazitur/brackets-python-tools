@@ -53,6 +53,7 @@ define(function (require, exports, module) {
 
     var preferencesTemplate = require("text!templates/preferences.html"),
         SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
+    var errorTemplate = require("text!templates/error.html");
     
     var PyHints = require("PyHints"),
         PyDocs  = require("PyDocs"),
@@ -133,6 +134,16 @@ define(function (require, exports, module) {
         });
     }
 
+    function internalError (error) {
+        Dialogs.showModalDialog(
+            "python-tools-error",
+            "Python Tools failed", //TODO: +Strings
+            Mustache.render(errorTemplate, {
+                error: error
+            }
+        ));
+    }
+
     AppInit.appReady(function () {
         
         var python_hints = new PyHints(pythonAPI),
@@ -152,10 +163,15 @@ define(function (require, exports, module) {
 
         window.setTimeout(function () {
             var start = new Date().getTime();
-            setUpPythonShell().done(function () {
+            setUpPythonShell().done(function (data) {
                 console.log("Established connection with Python shell in " +
                             (new Date().getTime() - start).toString() +
                             " milliseconds");
+                if (!data["with_jedi"]) {
+                    internalError(JSON.stringify(data));
+                }
+            }).fail(function(error) {
+                internalError(error);
             });
         }, 100);
 
@@ -163,9 +179,11 @@ define(function (require, exports, module) {
 
         CommandManager.register("Python Tools Settings", SETTINGS_CMD_ID, handleSettings); //TODO: +Strings
         var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
+        menu.addMenuDivider();
         menu.addMenuItem(SETTINGS_CMD_ID);
 
         ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
         ExtensionUtils.loadStyleSheet(module, "styles/docs.less");
+        ExtensionUtils.loadStyleSheet(module, "styles/modals.css");
     });
 });
