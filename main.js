@@ -24,27 +24,35 @@
  */
 
 //TODO: put hints that start with parameter upper than class, for example
+//TODO: don't show protected and private members unless stated explicitly
 //TODO: enhance docutils
 //TODO: fix sphinx' special roles uses in inline documentation
 //TODO: show only defined in file or in module completions - kinda impossible?
-//TODO: don't show protected and private members unless stated explicitly
 
 define(function (require, exports, module) {
     "use strict";
 
     var EXTENSION_NAME = "bazitur.python-tools";
 
-    var AppInit             = brackets.getModule("utils/AppInit"),
-        EditorManager       = brackets.getModule("editor/EditorManager"),
-        DocumentManager     = brackets.getModule("document/DocumentManager"),
-        CodeHintManager     = brackets.getModule("editor/CodeHintManager"),
-        CodeInspection      = brackets.getModule("language/CodeInspection"),
-        NodeDomain          = brackets.getModule("utils/NodeDomain"),
-        ExtensionUtils      = brackets.getModule("utils/ExtensionUtils"),
-        Dialogs             = brackets.getModule("widgets/Dialogs"),
-        PreferencesManager  = brackets.getModule("preferences/PreferencesManager"),
+    var AppInit            = brackets.getModule("utils/AppInit"),
 
-        prefs               = PreferencesManager.getExtensionPrefs("brackets-python-tools");
+        EditorManager      = brackets.getModule("editor/EditorManager"),
+        DocumentManager    = brackets.getModule("document/DocumentManager"),
+        CodeHintManager    = brackets.getModule("editor/CodeHintManager"),
+        PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
+        CommandManager     = brackets.getModule("command/CommandManager"),
+
+        CodeInspection     = brackets.getModule("language/CodeInspection"),
+        NodeDomain         = brackets.getModule("utils/NodeDomain"),
+        ExtensionUtils     = brackets.getModule("utils/ExtensionUtils"),
+        Dialogs            = brackets.getModule("widgets/Dialogs"),
+        Mustache           = brackets.getModule("thirdparty/mustache/mustache"),
+        Menus              = brackets.getModule("command/Menus"),
+
+        preferences        = PreferencesManager.getExtensionPrefs(EXTENSION_NAME);
+
+    var preferencesTemplate = require("text!templates/preferences.html"),
+        SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
     
     var PyHints = require("PyHints"),
         PyDocs  = require("PyDocs"),
@@ -53,10 +61,16 @@ define(function (require, exports, module) {
 
     var pythonToolsPath = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
 
-    prefs.definePreference("path_to_python", "string", "python3");
-    var pyPath = "python3", //TODO
-        pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
+    var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
 
+    preferences.definePreference("pathToPython", "string", "python3", {
+        description: "Path to Python executable" //TODO: replace with Strings
+    });
+    preferences.definePreference("isCaseSensitive", "boolean", true, {
+        description: "Use case sensitive completion" //TODO: +Strings
+    });
+
+    var pathToPython = preferences.get("pathToPython");
 
     /* A wrapper around call to python script.
      * @return $.Deferred()
@@ -66,44 +80,66 @@ define(function (require, exports, module) {
             deferred = new $.Deferred(),
             deserializedResponse;
 
-        pythonDomain.exec("pythonShell", serializedRequest, pyPath, pythonToolsPath)
+        pythonDomain.exec("pythonShell", serializedRequest, pathToPython, pythonToolsPath)
             .done(function(data) {
                 deserializedResponse = JSON.parse(data);
                 deferred.resolve(deserializedResponse);
             })
             .fail(function(error) {
-                console.error("Python Tools Error while using standart python API: " + error);
+                console.error("Python Tools Error via JSON API: " + error);
                 deferred.reject(error);
             });
         return deferred;
     }
 
-    function handlePreferences() {
-        var path = prefs.get('path_to_python');
-        var prefTpl = require("text!templates/preferences.html");
-        var dialog = Dialogs.showModalDialogUsingTemplate(prefTpl, false);
+    function handleSettings() {
+        var renderedTemplate = Mustache.render(preferencesTemplate, {
+            PYTHON_TOOLS_PREFERENCES_TITLE: "Python Tools Settings",
+            PATH_TO_PYTHON_TITLE: "Path to Python executable",
+            IS_CASE_SENSITIVE_TITLE: "Use case sensitive completion", //TODO: +Strings
+            BUTTON_CANCEL: "Cancel",
+            BUTTON_OK: "OK",
+
+            pathToPython: preferences.get("pathToPython"),
+            isCaseSensitive: preferences.get("isCaseSensitive")
+        });
+        var dialog = Dialogs.showModalDialogUsingTemplate(renderedTemplate, false);
         var getDialogElements = dialog.getElement();
-        var cancelBtn =  getDialogElements.find('#cancel');
-        var okBtn = getDialogElements.find('#ok');
-        var pythonPath = getDialogElements.find('#pythonPath');
-        pythonPath.val(prefs.get('path_to_python'));
-        cancelBtn.click(function () {
+        var cancelButton =  getDialogElements.find('#cancel-button');
+        var okButton = getDialogElements.find('#ok-button');
+        var newPathToPython = getDialogElements.find('#pathToPython');
+        var newIsCaseSensitive = getDialogElements.find('#isCaseSensitive');
+        cancelButton.click(function () {
             dialog.close();
         });
-        okBtn.click(function () {
-            prefs.set('path_to_python', pythonPath.val().trim());
-            prefs.save();
+        okButton.click(function () {
+            newPathToPython = newPathToPython.val().trim();
+            if (newPathToPython) {
+                preferences.set('pathToPython', newPathToPython);
+            }
+            preferences.set("isCaseSensitive", newIsCaseSensitive.prop("checked"));
+            preferences.save();
             dialog.close();
         });
     }
     
+    function setUpPythonShell () {
+        return pythonAPI({
+            "type": "setup",
+            "settings": {
+                "max_code_hints": PreferencesManager.get("maxCodeHints"),
+                "is_case_sensitive": preferences.get("isCaseSensitive")
+            }
+        });
+    }
+
     AppInit.appReady(function () {
         
         var python_hints = new PyHints(pythonAPI),
             python_docs  = new PyDocs(pythonAPI),
-            python_lint  = new PyLint(pythonDomain, pyPath),
+            python_lint  = new PyLint(pythonDomain, pathToPython),
             python_goto  = new PyGoto(pythonAPI).goto;
-        //NOTICE: EditorManager requires jump to definition provider to be a function.
+        // NOTICE: EditorManager requires jump to definition provider to be a function.
         // Thus, passing method to EditorManager.
 
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
@@ -114,7 +150,20 @@ define(function (require, exports, module) {
             scanFileAsync: python_lint.scanFileAsync
         });
 
-        window.setTimeout(()=>{pythonAPI({"type": "setup"})}, 100);
+        window.setTimeout(function () {
+            var start = new Date().getTime();
+            setUpPythonShell().done(function () {
+                console.log("Established connection with Python shell in " +
+                            (new Date().getTime() - start).toString() +
+                            " milliseconds");
+            });
+        }, 100);
+
+        preferences.on("change", setUpPythonShell);
+
+        CommandManager.register("Python Tools Settings", SETTINGS_CMD_ID, handleSettings); //TODO: +Strings
+        var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
+        menu.addMenuItem(SETTINGS_CMD_ID);
 
         ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
         ExtensionUtils.loadStyleSheet(module, "styles/docs.less");

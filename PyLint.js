@@ -10,6 +10,16 @@ define(function (require, exports, module) {
     if (!WITH_GUTTERS)
         console.warn('No bracketsInspectionGutters found on window, gutters disabled.');
 
+    function _getErrorSeverity (errorCode) {
+        if (["E121", "E123", "E126", "E133", "E226",
+             "E241", "E242", "E501", "E704", "W293","W503"].includes(errorCode))
+            return Type.META;
+        else if (/^(E(1|74|9)|F(6|7|8))/.test(errorCode))
+            return Type.ERROR;
+        else
+            return Type.WARNING;
+    }
+
     function PyLint(pyDomain, pyPath) {
         pythonDomain = pyDomain;
         pythonPath = pyPath;
@@ -35,8 +45,7 @@ define(function (require, exports, module) {
                                 ch: error.column - 1
                             },
                             message: error.code +': ' + error.text,
-                            type: ["E1", "E7", "E9", "F6", "F7", "F8"].indexOf(error.code.slice(0, 2)) !== -1?
-                                  Type.ERROR : Type.WARNING //TODO: replace with helper regex function
+                            type: _getErrorSeverity(error.code)
                         }
                     }),
                     aborted: false
@@ -44,7 +53,7 @@ define(function (require, exports, module) {
 
                 if (WITH_GUTTERS) {
                     window.bracketsInspectionGutters.set(
-                        'brackets-python-tools', fullPath, report, true
+                        'bazitur.python-tools', fullPath, report, true
                         //was: EXTENSION_UNIQUE_NAME, fullPath, report, preferences.get('gutterMarks', projectRoot)
                     );
                 }

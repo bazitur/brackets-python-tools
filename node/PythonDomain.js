@@ -32,7 +32,7 @@
             emitLines(child.stdout);
         }
         //TODO: finally understood where do tons of event handlers come from
-        //TODO: separate process cretion and querying
+        //TODO: separate process creation and querying
         child.stdout.on("line", function (line) {
             callBack(null, line);
         });
@@ -50,12 +50,12 @@
     function cmdFlake8(pyPath, fileName, callBack) {
         var result = [], stderr = '';
         var args = ['-m', 'flake8', '--exit-zero',
-                    "--format='%(row)d||%(col)d||%(code)s||%(text)s'", fileName];
+                    '--format=%(row)d||%(col)d||%(code)s||%(text)s', fileName];
         var flake8 = spawn(pyPath, args);
 
         flake8.stdout.on('data', function (data) {
-            data = data.toString().slice(1, -2);
-            data.split("'\n'").forEach(function (line) {
+            data = data.toString();
+            data.split("\n").forEach(function (line) {
                 if (line && line.trim()) {
                     line = line.split("||");
                     result.push({

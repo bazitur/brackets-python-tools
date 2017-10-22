@@ -3,34 +3,37 @@
 # Copyright (c) 2016 K.Saravanan
 # Copyright (c) 2017 Basil Miturich
 #
-# Permission is hereby granted, free of charge, to any person obtaining a copy of
-# this software and associated documentation files (the "Software"), to deal in
-# the Software without restriction, including without limitation the rights to use,
-# copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
-# Software, and to permit persons to whom the Software is furnished to do so,
-# subject to the following conditions:
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 from json import loads, dumps
-from docutils.core import publish_parts
 import sys
-import os
-from tinyhtmlwriter import format_docs
-sys.path.append(os.path.dirname(__file__))
-import jedi
-sys.path.pop(0) # remove jedi from completion
-
-jedi.settings.case_insensitive_completion = False
-#TODO: add case sensitivity to settings
+try:
+    from tinyhtmlwriter import format_docs
+    WITH_DOCUTILS = True
+except:
+    WITH_DOCUTILS = False
+try:
+    import jedi # noqa
+    sys.path.pop(0)  # remove jedi from completion
+    WITH_JEDI = True
+except:
+    WITH_JEDI = False
 
 
 class PythonToolsError(Exception):
@@ -40,7 +43,7 @@ class PythonToolsError(Exception):
 
 class PythonTools:
     def __init__(self):
-        pass
+        self.settings = {}
 
     def input(self):
         """
@@ -86,7 +89,14 @@ class PythonTools:
         """
         Set up initial settings.
         """
-        return {"OK": True}
+        settings = request["settings"]
+        jedi.settings.case_insensitive_completion = not settings["is_case_sensitive"]
+
+        self.settings["max_code_hints"] = settings["max_code_hints"]
+        return {
+            "with_jedi": WITH_JEDI,
+            "with_docutils": WITH_DOCUTILS
+        }
 
     def autocomplete(self, request):
         script = self._script_from_request(request)
@@ -103,7 +113,7 @@ class PythonTools:
                 "docstring":   docstring
             })
         # TODO: sort completions here!
-        return completions[:50]  # TODO: replace 50 with `maxCodeHints`
+        return completions[:self.settings["max_code_hints"]]
 
     def get_documentation(self, request):
         script = self._script_from_request(request)
@@ -121,9 +131,12 @@ class PythonTools:
             if "\n\n" in docstring:
                 title, body = docstring.split("\n\n", maxsplit=1)
                 if body.strip():
-                    try:
-                        docs = format_docs(body)
-                    except:
+                    if WITH_DOCUTILS:
+                        try:
+                            docs = format_docs(body)
+                        except:
+                            docs = body
+                    else:
                         docs = body
                     response["docs"] = docs
                     response["title"] = title
@@ -132,8 +145,7 @@ class PythonTools:
 
     def goto_definition(self, request):
         try:
-            script = jedi.api.Script(request["source"], request["line"] + 1,
-                                     request["column"], request["path"])
+            script = self._script_from_request(request)
             assignments = list(script.goto_assignments())
             definitions = list(script.goto_definitions())
         except:
@@ -155,9 +167,8 @@ class PythonTools:
         }
         return {"success": False}
 
-    def code_hint(self, request):
-
-        return {}
+    def code_hint(self, request):  # TODO
+        raise NotImplemented
 
     def watch(self):
         """

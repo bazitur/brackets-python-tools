@@ -1,18 +1,27 @@
 <div class="modal">
   <div class="modal-header">
-    <h1 class="dialog-title">Python Tools Preferences</h1>
+    <h1 class="dialog-title">{{ PYTHON_TOOLS_PREFERENCES_TITLE }}</h1>
   </div>
   <div class="modal-body">
-    <div class="form-horizontal">
-      <label>Python interpreter path</label>
-      <input type="text" placeholder="/usr/bin/python3" id="pythonPath" required>
+
+    <div class="row-fluid">
+      <label for="pathToPython">{{ PATH_TO_PYTHON_TITLE }}</label>
+      <input type="text" id="pathToPython" value="{{ pathToPython }}">
     </div>
+
+    <div class="row-fluid">
+      <label for="isCaseSensitive">
+        <input type="checkbox" id="isCaseSensitive" {{# isCaseSensitive }}checked{{/ isCaseSensitive }}>
+        {{ IS_CASE_SENSITIVE_TITLE }}
+      </label>
+    </div>
+
   </div>
   <div class="modal-footer">
-    <button class="btn btn-80" id="cancel">
+    <button class="btn btn-80" id="cancel-button">
       Cancel
     </button>
-    <button class="primary btn btn-80" id="ok">
+    <button class="primary btn btn-80" id="ok-button">
       Save
     </button>
   </div>

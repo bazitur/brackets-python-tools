@@ -81,6 +81,8 @@ define(function (require, exports, module) {
         return deferred;
     }
 
+    PyHints.prototype.insertHintOnTab = true;
+
     PyHints.prototype.hasHints = function (editor, implicitChar) {
         cache['editor'] = editor;
 
@@ -93,7 +95,7 @@ define(function (require, exports, module) {
         if (!canGetHints) return false;
 
         var line = editor.document.getRange({'ch': 0, 'line': cursor.line}, cursor),
-            test_regexp = /[A-Za-z_][A-Za-z_0-9]{1,}$/;
+            test_regexp = /[A-Za-z_][A-Za-z_0-9]{1,}\.?$/;
 
         if (test_regexp.test(line)) return true;
 

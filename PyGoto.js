@@ -20,12 +20,11 @@ define(function (require, exports, module) {
         var result = new $.Deferred();
         pythonAPI({
             "type":   "goto",
-            "path":   hostEditor.document.file._path,
+            "path":   hostEditor.document.file.fullPath,
             "line":   cursor.line,
             "column": cursor.ch,
             "source": hostEditor.document.getText()
         }).done(function (response) {
-            console.log("Finished with: "+JSON.stringify(response));
             if (response.success && isWithinProject(response.path)) {
                 CommandManager.execute(Commands.FILE_OPEN, {fullPath: response.path})
                     .done(function () {

@@ -1,8 +1,8 @@
 {
-    "name": "brackets-python-tools",
+    "name": "bazitur.python-tools",
     "title": "Python Tools",
     "description": "A set of tools for Python 3 featuring smart autocompletion, quickdocs, goto definition, linting and more.",
-    "homepage": "https://bazitur.github.io/brackets-python-tools",
+    "homepage": "https://github.com/bazitur/brackets-python-tools",
     "version": "0.9.0",
     "author": "Basil Miturich",
     "license": "MIT",
