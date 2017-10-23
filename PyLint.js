@@ -3,8 +3,9 @@ define(function (require, exports, module) {
     var Type = brackets.getModule("language/CodeInspection").Type,
         getCurrentDocument = brackets.getModule("document/DocumentManager").getCurrentDocument;
 
-    var pythonDomain = null,
-        pythonPath = null;
+    var pythonDomain,
+        pythonPath,
+        flake8Available = true;
 
     var WITH_GUTTERS = new Boolean(window.bracketsInspectionGutters);
     if (!WITH_GUTTERS)
@@ -26,7 +27,7 @@ define(function (require, exports, module) {
     }
 
     PyLint.prototype.scanFileAsync = function(text, fullPath) {
-        if (getCurrentDocument().isDirty) {
+        if ((!flake8Available) || getCurrentDocument().isDirty) {
             // flake8 cannot deal with unsaved files. Abort checks if file is unsaved
             return {
                 aborted: true
@@ -54,13 +55,13 @@ define(function (require, exports, module) {
                 if (WITH_GUTTERS) {
                     window.bracketsInspectionGutters.set(
                         'bazitur.python-tools', fullPath, report, true
-                        //was: EXTENSION_UNIQUE_NAME, fullPath, report, preferences.get('gutterMarks', projectRoot)
                     );
                 }
 
                 result.resolve(report);
             })
             .fail(function (error) {
+                flake8Available = false;
                 result.reject(error);
             });
 

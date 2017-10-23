@@ -90,7 +90,9 @@ class PythonTools:
         Set up initial settings.
         """
         settings = request["settings"]
-        jedi.settings.case_insensitive_completion = not settings["is_case_sensitive"]
+
+        if WITH_JEDI:
+            jedi.settings.case_insensitive_completion = not settings["is_case_sensitive"]
 
         self.settings["max_code_hints"] = settings["max_code_hints"]
         return {
@@ -151,10 +153,10 @@ class PythonTools:
         except:
             return {"success": False}
 
-        if definitions and not definitions[0].in_builtin_module():
-            goto = definitions
-        elif assignments:
+        if assignments:
             goto = assignments
+        elif definitions and not definitions[0].in_builtin_module():
+            goto = definitions
         else:
             return {"success": False}
 

@@ -48,12 +48,15 @@ define(function (require, exports, module) {
         Dialogs            = brackets.getModule("widgets/Dialogs"),
         Mustache           = brackets.getModule("thirdparty/mustache/mustache"),
         Menus              = brackets.getModule("command/Menus"),
+        CoreStrings        = brackets.getModule("strings"),
 
         preferences        = PreferencesManager.getExtensionPrefs(EXTENSION_NAME);
 
-    var preferencesTemplate = require("text!templates/preferences.html"),
-        SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
-    var errorTemplate = require("text!templates/error.html");
+    var LocalStrings = require("strings"),
+        settingsTemplate = require("text!templates/preferences.html"),
+        errorTemplate = require("text!templates/error.html");
+
+    var SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
     
     var PyHints = require("PyHints"),
         PyDocs  = require("PyDocs"),
@@ -94,12 +97,13 @@ define(function (require, exports, module) {
     }
 
     function handleSettings() {
-        var renderedTemplate = Mustache.render(preferencesTemplate, {
-            PYTHON_TOOLS_PREFERENCES_TITLE: "Python Tools Settings",
-            PATH_TO_PYTHON_TITLE: "Path to Python executable",
-            IS_CASE_SENSITIVE_TITLE: "Use case sensitive completion", //TODO: +Strings
-            BUTTON_CANCEL: "Cancel",
-            BUTTON_OK: "OK",
+        var renderedTemplate = Mustache.render(settingsTemplate, {
+            PYTHON_TOOLS_SETTINGS_TITLE: LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
+            PATH_TO_PYTHON_TITLE:        LocalStrings.PATH_TO_PYTHON_TITLE,
+            IS_CASE_SENSITIVE_TITLE:     LocalStrings.IS_CASE_SENSITIVE_TITLE,
+            SETTINGS_NOTE:               LocalStrings.SETTINGS_NOTE,
+            BUTTON_CANCEL:               CoreStrings.CANCEL,
+            BUTTON_SAVE:                 CoreStrings.SAVE,
 
             pathToPython: preferences.get("pathToPython"),
             isCaseSensitive: preferences.get("isCaseSensitive")
@@ -114,31 +118,40 @@ define(function (require, exports, module) {
             dialog.close();
         });
         okButton.click(function () {
+            dialog.close();
             newPathToPython = newPathToPython.val().trim();
             if (newPathToPython) {
                 preferences.set('pathToPython', newPathToPython);
             }
             preferences.set("isCaseSensitive", newIsCaseSensitive.prop("checked"));
             preferences.save();
-            dialog.close();
         });
     }
     
     function setUpPythonShell () {
-        return pythonAPI({
+        pythonAPI({
             "type": "setup",
             "settings": {
                 "max_code_hints": PreferencesManager.get("maxCodeHints"),
                 "is_case_sensitive": preferences.get("isCaseSensitive")
             }
+        }).done(function (data) {
+            if (!data["with_jedi"]) {
+                internalError(JSON.stringify(data));
+            }
+        }).fail(function(error) {
+            internalError(error);
         });
     }
 
     function internalError (error) {
         Dialogs.showModalDialog(
             "python-tools-error",
-            "Python Tools failed", //TODO: +Strings
+            LocalStrings.ERROR_TITLE,
             Mustache.render(errorTemplate, {
+                ERROR_NOTICE: LocalStrings.ERROR_NOTICE,
+                ERROR_TEXT:   LocalStrings.ERROR_TEXT,
+
                 error: error
             }
         ));
@@ -162,22 +175,14 @@ define(function (require, exports, module) {
         });
 
         window.setTimeout(function () {
-            var start = new Date().getTime();
-            setUpPythonShell().done(function (data) {
-                console.log("Established connection with Python shell in " +
-                            (new Date().getTime() - start).toString() +
-                            " milliseconds");
-                if (!data["with_jedi"]) {
-                    internalError(JSON.stringify(data));
-                }
-            }).fail(function(error) {
-                internalError(error);
-            });
-        }, 100);
+            setUpPythonShell();
+        }, 20);
 
         preferences.on("change", setUpPythonShell);
 
-        CommandManager.register("Python Tools Settings", SETTINGS_CMD_ID, handleSettings); //TODO: +Strings
+        CommandManager.register(LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
+                                SETTINGS_CMD_ID,
+                                handleSettings); //TODO: +Strings
         var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         menu.addMenuDivider();
         menu.addMenuItem(SETTINGS_CMD_ID);
