@@ -4,7 +4,8 @@ define(function (require, exports, module) {
     var isWithinProject = brackets.getModule("project/ProjectManager").isWithinProject,
         EditorManager   = brackets.getModule("editor/EditorManager"),
         Commands        = brackets.getModule("command/Commands"),
-        CommandManager  = brackets.getModule("command/CommandManager");
+        CommandManager  = brackets.getModule("command/CommandManager"),
+        FileUtils       = brackets.getModule("file/FileUtils");
 
     var pythonAPI = null;
 
@@ -25,14 +26,19 @@ define(function (require, exports, module) {
             "column": cursor.ch,
             "source": hostEditor.document.getText()
         }).done(function (response) {
-            if (response.success && isWithinProject(response.path)) {
-                CommandManager.execute(Commands.FILE_OPEN, {fullPath: response.path})
+            if (response.success) {
+                var path = FileUtils.convertWindowsPathToUnixPath(response.path);
+                if (isWithinProject(path)) {
+                CommandManager.execute(Commands.FILE_OPEN, {fullPath: path})
                     .done(function () {
                         var currentEditor = EditorManager.getActiveEditor();
                         currentEditor.setCursorPos(response.line-1, response.column, true);
                         currentEditor.selectWordAt({line: response.line-1, ch: response.column});
                         result.resolve();
                     });
+                } else {
+                    result.reject();
+                }
             } else {
                 result.reject();
             }

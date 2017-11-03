@@ -25,7 +25,7 @@
 
 /* global define, brackets, $, window */
 
-//TODO: add error ignore support (should be pretty straightforward)
+//TODO: run flake8 from project root, as well as python utils.
 //TODO: fix sphinx' special roles uses in inline documentation - maybe just use Sphinx?
 //TODO: move flake8 to standart API, if it'll ever get API.
 //TODO: add terminal?
