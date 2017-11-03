@@ -23,11 +23,11 @@
  *
  */
 
-//TODO: put hints that start with parameter upper than class, for example
-//TODO: don't show protected and private members unless stated explicitly
-//TODO: enhance docutils
-//TODO: fix sphinx' special roles uses in inline documentation
-//TODO: show only defined in file or in module completions - kinda impossible?
+/* global define, brackets, $, window */
+
+
+//TODO: fix sphinx' special roles uses in inline documentation - maybe just use Sphinx?
+//TODO: add terminal?
 
 define(function (require, exports, module) {
     "use strict";
@@ -63,7 +63,7 @@ define(function (require, exports, module) {
         PyLint  = require("PyLint"),
         PyGoto  = require("PyGoto");
 
-    var pythonToolsPath = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
+    var SCRIPT_FULL_PATH = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
 
     var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
 
@@ -80,22 +80,28 @@ define(function (require, exports, module) {
      * @return $.Deferred()
      */
     function pythonAPI (request) {
-        var serializedRequest = JSON.stringify(request),
-            deferred = new $.Deferred(),
-            deserializedResponse;
+        var deferred = new $.Deferred();
 
-        pythonDomain.exec("pythonShell", serializedRequest, pathToPython, pythonToolsPath)
+        pythonDomain.exec("sendToShell", request)
             .done(function(data) {
-                deserializedResponse = JSON.parse(data);
-                deferred.resolve(deserializedResponse);
+                if (data.status === "OK")
+                    deferred.resolve(data.content);
+                else if (data.status === "ERROR") {
+                    console.error("Non-critical error in Python Domain");
+                    console.error(JSON.stringify(data.error, null, 4));
+                    deferred.reject(data.content);
+                }
             })
             .fail(function(error) {
-                console.error("Python Tools Error via JSON API: " + error);
+                console.error("Critical error in Python Domain");
+                console.error(error);
                 deferred.reject(error);
             });
         return deferred;
     }
-
+    /* Settings dialog handler.
+     * @return null
+     */
     function handleSettings() {
         var renderedTemplate = Mustache.render(settingsTemplate, {
             PYTHON_TOOLS_SETTINGS_TITLE: LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
@@ -129,18 +135,26 @@ define(function (require, exports, module) {
     }
     
     function setUpPythonShell () {
-        pythonAPI({
-            "type": "setup",
-            "settings": {
-                "max_code_hints": PreferencesManager.get("maxCodeHints"),
-                "is_case_sensitive": preferences.get("isCaseSensitive")
-            }
-        }).done(function (data) {
-            if (!data["with_jedi"]) {
-                internalError(JSON.stringify(data));
-            }
-        }).fail(function(error) {
-            internalError(error);
+        pythonDomain.exec("setSettings", {
+            pythonPath: preferences.get("pathToPython"),
+            pythonScript: SCRIPT_FULL_PATH
+        }).done(function() {
+            pythonDomain.exec("startShell").done(function() {
+                pythonAPI({
+                    "type": "setup",
+                    "settings": {
+                        "is_case_sensitive": preferences.get("isCaseSensitive")
+                    }
+                }).done(function (data) {
+                    if (!data["with_jedi"]) {
+                        internalError(JSON.stringify(data, null, 4));
+                    } else {
+                        console.log("Established connnection with Python Shell…");
+                    }
+                }).fail(function(error) {
+                    internalError(error);
+                });
+            });
         });
     }
 
@@ -174,15 +188,15 @@ define(function (require, exports, module) {
             scanFileAsync: python_lint.scanFileAsync
         });
 
-        window.setTimeout(function () {
-            setUpPythonShell();
-        }, 20);
-
+        window.setTimeout(setUpPythonShell, 20);
         preferences.on("change", setUpPythonShell);
 
-        CommandManager.register(LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
-                                SETTINGS_CMD_ID,
-                                handleSettings); //TODO: +Strings
+        CommandManager.register(
+            LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
+            SETTINGS_CMD_ID,
+            handleSettings
+        );
+
         var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         menu.addMenuDivider();
         menu.addMenuItem(SETTINGS_CMD_ID);

@@ -2,52 +2,64 @@
     "use strict";
     var spawn = require("child_process").spawn;
 
-    /* from https://gist.github.com/TooTallNate/1785026 */
-    //TODO: child restart is broken
-    function emitLines(stream) {
-        var backlog = '';
-        stream.on('data', function (data) {
-            backlog += data;
-            var n = backlog.indexOf('\n');
-            // got a \n? emit one or more 'line' events
-            while (~n) {
-                stream.emit('line', backlog.substring(0, n));
-                backlog = backlog.substring(n + 1);
-                n = backlog.indexOf('\n');
-            }
-        });
-        stream.on('end', function () {
-            if (backlog) {
-                stream.emit('line', backlog);
-            }
-        });
+    function PythonShell(pythonPath, pythonScript) {
+        this.pythonPath = pythonPath;
+        this.pythonScript = pythonScript;
+        this.needsRestart = false;
     }
-    var child = null;
-    function cmdPythonShell(data, pyPath, pyScript, callBack) {
-        var stdout = '', stderr = '', chunks = [];
 
-        if (!child) {
-            // spawn process if not exists. Else use the old one
-            child = spawn(pyPath, ['-u', pyScript]);
-            emitLines(child.stdout);
+    PythonShell.prototype.send = function (data, callBack) {
+        this.callBack = callBack;
+        this.process.stdin.write(JSON.stringify(data));
+        this.process.stdin.write("\n");
+    };
+
+    PythonShell.prototype.setSettings = function (settings, callBack) {
+        this.pythonPath = settings.pythonPath;
+        this.pythonScript = settings.pythonScript;
+        callBack(null, "");
+    };
+
+    PythonShell.prototype.handleData = function (buffer) {
+        if (this.callBack) {
+            this.callBack(null, JSON.parse(buffer.toString()));
+        } else {
+            console.error("Unhandled data");
         }
-        //TODO: finally understood where do tons of event handlers come from
-        //TODO: separate process creation and querying
-        child.stdout.on("line", function (line) {
-            callBack(null, line);
-        });
+    };
 
-        child.stderr.on("data", function (error) {
-            stderr += error.toString();
-        });
+    PythonShell.prototype.handleError = function (errorBuffer) {
+        var error = errorBuffer.toString();
+        // should not restart the process there, may continue infinitely
+        if (this.callBack) {
+            this.callBack(error, null);
+        } else {
+            console.error("Unhandled error: %s", error);
+        }
+    };
+    PythonShell.prototype.handleClose = function (code) {
+        if (code === 0 && this.callBack)
+            this.callBack(null, true);
+        else
+            this.callBack(null, code);
+        this.needsRestart = true;
+    };
 
-        child.stderr.on("end", function (code) {
-            console.error("Python Domain Error: " + stderr);
-            callBack(stderr, null);
-        })
-        child.stdin.write(data);
-        child.stdin.write('\n');
-    }
+    PythonShell.prototype.start = function (callBack) {
+        if (this.needsRestart) {
+            this.process.kill();
+            this.needsRestart = false;
+        }
+
+        this.process = spawn(this.pythonPath, ["-u", this.pythonScript]);
+        this.process.stdout.on("data", this.handleData.bind(this));
+        this.process.stderr.on("data", this.handleError.bind(this));
+        this.process.on("close", this.handleClose.bind(this));
+
+        callBack(null, true);
+    };
+
+    var pyShell = new PythonShell(null, null);
 
     function cmdFlake8(pyPath, fileName, callBack) {
         var result = [], stderr = '';
@@ -84,18 +96,27 @@
         if (!domainManager.hasDomain("python-tools")) {
             domainManager.registerDomain("python-tools", {major: 0, minor: 1});
         }
-        domainManager.registerCommand(
-            "python-tools",       // domain name
-            "pythonShell",        // command name
-            cmdPythonShell,       // command handler function
-            true                  // this command is asynchronous in Node
-        );
-        domainManager.registerCommand(
-            "python-tools",
-            "Flake8",
-            cmdFlake8,
-            true
-        );
+
+        [{
+            name: "startShell",
+            func: pyShell.start.bind(pyShell)
+        }, {
+            name: "sendToShell",
+            func: pyShell.send.bind(pyShell)
+        }, {
+            name: "setSettings",
+            func: pyShell.setSettings.bind(pyShell)
+        }, {
+            name: "Flake8",
+            func: cmdFlake8
+        }].forEach(function (item) {
+            domainManager.registerCommand(
+                "python-tools",
+                item.name,
+                item.func,
+                true        // is async
+            );
+        });
     }
 
     exports.init = init;

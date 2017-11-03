@@ -715,6 +715,7 @@ class HTMLTranslator(n.NodeVisitor, object):
     def depart_problematic(self, node):
         self.body.append('</span>')
 
+
 def format_docs(rst):
     # store full html output to html variable
     writer = Writer()

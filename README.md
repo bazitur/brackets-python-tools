@@ -16,13 +16,13 @@ Additionally, you'll need:
     ```bash
     ~$ pip install jedi flake8
     ```
-  - `docutils` module (optional) for docs rendering. It can be install with pip as well:
+  - `docutils` module (optional) for documentation rendering. It can be install with pip as well:
     ```bash
     ~$ pip install docutils
     ```
 
 ## Usage
-This Extension uses Python 3 interpreter in your path by default. You can customize interpreter either in Preferences File or in Python Tools tab.
+This Extension uses Python 3 interpreter in your path by default. You can customize interpreter either in Preferences File or in Python Tools Settings tab.
 
 ## Settings
 Settings are accessible through standart brackets settings interface or 'File' menu 🡒 Python Tools Settings.
@@ -34,7 +34,7 @@ Currently available settings:
     If code completion should be case sensitive. Default is `true`.
 
 ## Credits
-This project is based on the [Python Jedi Project](https://github.com/saravanan-k90/python-jedi-brackets).
+This project uses the [Python Jedi Project](https://github.com/saravanan-k90/python-jedi-brackets).
 
 ## License
 The source code is licensed MIT. See LICENSE.md for more.

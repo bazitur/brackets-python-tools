@@ -53,7 +53,7 @@ define(function (require, exports, module) {
 
     function InlineDocsViewer(docs) {
         InlineWidget.call(this);
-
+        console.log(docs);
         var html = Mustache.render(docsTemplate, docs);
 
         this.$wrapperDiv = $(html);

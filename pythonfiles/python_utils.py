@@ -23,6 +23,7 @@
 
 from json import loads, dumps
 import sys
+from traceback import format_tb
 try:
     from tinyhtmlwriter import format_docs
     WITH_DOCUTILS = True
@@ -38,7 +39,7 @@ except:
 
 class PythonToolsError(Exception):
     """ Class for python tools errors """
-    pass
+    __name__ = "PythonToolsError"
 
 
 class PythonTools:
@@ -68,16 +69,31 @@ class PythonTools:
             "goto": self.goto_definition,
             "docs": self.get_documentation,
             "setup": self.setup,
-            "code_hint": self.code_hint,
+            "paramter_hint": self.parameter_hint,
             "autocomplete": self.autocomplete
         }
-        processor = dispatches.get(request["type"], None)
-        if processor is None:
-            raise PythonToolsError('Unknown command "%s"' % request["type"])
-        else:
-            return processor(request)
+        processor = dispatches.get(request.get("type", None), None)
+        try:
+            if processor is None:
+                raise PythonToolsError('Unknown command "%s"' % request["type"])
+            else:
+                return {
+                    "status": "OK",
+                    "content": processor(request)
+                }
+        except Exception as E:
+            return {
+                "status": "ERROR",
+                "error": {
+                    "name": E.__class__.__name__,
+                    "value": str(E),
+                    "traceback": format_tb(sys.exc_info()[2])
+                }
+            }
 
     def _script_from_request(self, request):
+        if not WITH_JEDI:
+            raise PythonToolsError("Jedi unawailable")
         return jedi.api.Script(
             source = request["source"],
             line   = request["line"] + 1, # Jedi starts line count with 1
@@ -92,9 +108,9 @@ class PythonTools:
         settings = request["settings"]
 
         if WITH_JEDI:
-            jedi.settings.case_insensitive_completion = not settings["is_case_sensitive"]
+            jedi.settings.case_insensitive_completion = \
+                not settings["is_case_sensitive"]
 
-        self.settings["max_code_hints"] = settings["max_code_hints"]
         return {
             "with_jedi": WITH_JEDI,
             "with_docutils": WITH_DOCUTILS
@@ -115,13 +131,14 @@ class PythonTools:
                 "docstring":   docstring
             })
         # TODO: sort completions here!
-        return completions[:self.settings["max_code_hints"]]
+        return completions
 
     def get_documentation(self, request):
         script = self._script_from_request(request)
 
         response = {
             "docs": None,
+            "formatted": False,
             "title": None
         }
 
@@ -136,6 +153,7 @@ class PythonTools:
                     if WITH_DOCUTILS:
                         try:
                             docs = format_docs(body)
+                            response["formatted"] = True
                         except:
                             docs = body
                     else:
@@ -146,12 +164,9 @@ class PythonTools:
         return response
 
     def goto_definition(self, request):
-        try:
-            script = self._script_from_request(request)
-            assignments = list(script.goto_assignments())
-            definitions = list(script.goto_definitions())
-        except:
-            return {"success": False}
+        script = self._script_from_request(request)
+        assignments = list(script.goto_assignments())
+        definitions = list(script.goto_definitions())
 
         if assignments:
             goto = assignments
@@ -167,9 +182,9 @@ class PythonTools:
             "column":  definition.column,
             "success": True
         }
-        return {"success": False}
 
-    def code_hint(self, request):  # TODO
+    def parameter_hint(self, request):
+        # it looks like parameter hinting is not a part of standart Brackets API
         raise NotImplemented
 
     def watch(self):
