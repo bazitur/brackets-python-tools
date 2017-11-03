@@ -1,7 +1,11 @@
+/* global global, require, exports */
 (function() {
     "use strict";
     var spawn = require("child_process").spawn;
 
+    /*
+     * @constructor
+     */
     function PythonShell(pythonPath, pythonScript) {
         this.pythonPath = pythonPath;
         this.pythonScript = pythonScript;
@@ -10,8 +14,11 @@
 
     PythonShell.prototype.send = function (data, callBack) {
         this.callBack = callBack;
-        this.process.stdin.write(JSON.stringify(data));
-        this.process.stdin.write("\n");
+        if (!this.process) callBack(true, null);
+        else {
+            this.process.stdin.write(JSON.stringify(data));
+            this.process.stdin.write("\n");
+        }
     };
 
     PythonShell.prototype.setSettings = function (settings, callBack) {
@@ -39,10 +46,12 @@
     };
 
     PythonShell.prototype.handleClose = function (code) {
-        if (code === 0 && this.callBack)
-            this.callBack(null, true);
-        else
-            this.callBack(null, code);
+        if (this.callBack) {
+            if (code === 0)
+                this.callBack(null, true);
+            else
+                this.callBack(null, code);
+        }
         this.needsRestart = true;
     };
 
@@ -52,21 +61,33 @@
             this.needsRestart = false;
         }
 
-        this.process = spawn(this.pythonPath, ["-u", this.pythonScript]);
+        this.process = spawn(this.pythonPath, ["-u", this.pythonScript], {
+            windowsHide: true
+        });
+        this.process.on("error", function () {
+            callBack(null, "Error spawning process");
+        });
         this.process.stdout.on("data", this.handleData.bind(this));
         this.process.stderr.on("data", this.handleError.bind(this));
         this.process.on("close", this.handleClose.bind(this));
 
-        callBack(null, true);
+        // resolve in 500 milliseconds if no errors had occured
+        this.callBack = callBack;
+        global.setTimeout(function () { callBack(null, true) }, 500);
     };
 
     var pyShell = new PythonShell(null, null);
 
-    function cmdFlake8(pyPath, fileName, lineLength, callBack) {
+    function cmdFlake8(pyPath, fileName, lineLength, ignoredErrors, callBack) {
         var result = [], stderr = '';
+
         var args = ['-m', 'flake8', '--exit-zero',
-                    '--max-line-length='+lineLength.toString(),
-                    '--format=%(row)d||%(col)d||%(code)s||%(text)s', fileName];
+                    '--max-line-length=' + lineLength.toString(),
+                    '--format=%(row)d||%(col)d||%(code)s||%(text)s'];
+
+        if (ignoredErrors.length > 0)
+            args.push('--ignore='+ignoredErrors.join(','));
+        args.push(fileName);
         var flake8 = spawn(pyPath, args);
 
         flake8.stdout.on('data', function (data) {

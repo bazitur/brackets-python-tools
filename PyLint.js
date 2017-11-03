@@ -17,8 +17,8 @@ define(function (require, exports, module) {
         console.warn('No bracketsInspectionGutters found in window, gutters disabled.');
 
     function _getErrorSeverity (errorCode) {
-        if (["E121", "E123", "E126", "E133", "E226",
-             "E241", "E242", "E501", "E704", "W293","W503"].includes(errorCode))
+        if (["E121", "E123", "E126", "E133", "E226", "E241",
+             "E303", "E242", "E501", "E704", "W293", "W503"].includes(errorCode))
             return Type.META;
         else if (/^(E(1|74|9)|F(6|7|8))/.test(errorCode))
             return Type.ERROR;
@@ -42,7 +42,8 @@ define(function (require, exports, module) {
         pythonDomain.exec("Flake8",
                           preferences.get("pathToPython"),
                           fullPath,
-                          preferences.get("maxLineLength"))
+                          preferences.get("maxLineLength"),
+                          preferences.get("ignoredErrors"))
             .done(function (data) {
 
                 var report = {

@@ -18,15 +18,17 @@
     </div>
 
     <div class="form-group is-cleared-both">
+      <label for="ignoredErrors" class="is-floated-left">{{ IGNORED_ERRORS_TITLE }}</label>
+      <input type="text" id="ignoredErrors" value="{{ ignoredErrors }}"
+             class="is-floated-right is-monospaced">
+    </div>
+
+    <div class="form-group is-cleared-both properly-padded">
       <label for="isCaseSensitive">
         <input type="checkbox" id="isCaseSensitive" {{# isCaseSensitive }} checked{{/ isCaseSensitive }}>
         {{ IS_CASE_SENSITIVE_TITLE }}
       </label>
     </div>
-
-    <p>
-      {{ SETTINGS_NOTE }}
-    </p>
 
   </div>
   <div class="modal-footer">

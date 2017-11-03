@@ -25,7 +25,7 @@
 
 /* global define, brackets, $, window */
 
-
+//TODO: add error ignore support (should be pretty straightforward)
 //TODO: fix sphinx' special roles uses in inline documentation - maybe just use Sphinx?
 //TODO: move flake8 to standart API, if it'll ever get API.
 //TODO: add terminal?
@@ -33,7 +33,10 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var EXTENSION_NAME = require("constants").EXTENSION_NAME;
+    var CONSTANTS = require("constants");
+
+    var EXTENSION_NAME = CONSTANTS.EXTENSION_NAME,
+        ERROR_CODES    = CONSTANTS.ERROR_CODES;
 
     var AppInit            = brackets.getModule("utils/AppInit"),
 
@@ -53,9 +56,9 @@ define(function (require, exports, module) {
 
         preferences        = PreferencesManager.getExtensionPrefs(EXTENSION_NAME);
 
-    var LocalStrings = require("strings"),
+    var LocalStrings     = require("strings"),
         settingsTemplate = require("text!templates/preferences.html"),
-        errorTemplate = require("text!templates/error.html");
+        errorTemplate    = require("text!templates/error.html");
 
     var SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
     
@@ -81,6 +84,12 @@ define(function (require, exports, module) {
         description: LocalStrings.MAX_LINE_LENGTH_TITLE,
         validator: function (value) {
             return 70 <= value && value <= 300;
+        }
+    });
+    preferences.definePreference("ignoredErrors", "array", [], {
+        description: LocalStrings.IGNORED_ERRORS_TITLE,
+        validator: function (arr) {
+            return arr.every(function (el) { return ERROR_CODES.includes(el); });
         }
     });
 
@@ -109,6 +118,7 @@ define(function (require, exports, module) {
             });
         return deferred;
     }
+
     /* Settings dialog handler.
      * @return null
      */
@@ -118,22 +128,24 @@ define(function (require, exports, module) {
             PATH_TO_PYTHON_TITLE:        LocalStrings.PATH_TO_PYTHON_TITLE,
             IS_CASE_SENSITIVE_TITLE:     LocalStrings.IS_CASE_SENSITIVE_TITLE,
             MAX_LINE_LENGTH_TITLE:       LocalStrings.MAX_LINE_LENGTH_TITLE,
-            SETTINGS_NOTE:               LocalStrings.SETTINGS_NOTE,
+            IGNORED_ERRORS_TITLE:        LocalStrings.IGNORED_ERRORS_TITLE,
             BUTTON_CANCEL:               CoreStrings.CANCEL,
             BUTTON_SAVE:                 CoreStrings.SAVE,
 
             pathToPython:    preferences.get("pathToPython"),
             isCaseSensitive: preferences.get("isCaseSensitive"),
-            maxLineLength:   preferences.get("maxLineLength")
+            maxLineLength:   preferences.get("maxLineLength"),
+            ignoredErrors:   JSON.stringify(preferences.get("ignoredErrors"))
         });
         var dialog = Dialogs.showModalDialogUsingTemplate(renderedTemplate, false);
         var getDialogElements = dialog.getElement();
         var cancelButton =  getDialogElements.find('#cancel-button');
         var okButton = getDialogElements.find('#ok-button');
 
-        var newPathToPython =    getDialogElements.find('#pathToPython'),
+        var newPathToPython    = getDialogElements.find('#pathToPython'),
             newIsCaseSensitive = getDialogElements.find('#isCaseSensitive'),
-            newMaxLineLength =   getDialogElements.find("#maxLineLength");
+            newMaxLineLength   = getDialogElements.find("#maxLineLength"),
+            newIgnoredErrors   = getDialogElements.find("#ignoredErrors");
 
         cancelButton.click(function () {
             dialog.close();
@@ -142,6 +154,17 @@ define(function (require, exports, module) {
             dialog.close();
             newPathToPython = newPathToPython.val().trim();
             if (newPathToPython) preferences.set('pathToPython', newPathToPython);
+
+            try {
+                newIgnoredErrors = JSON.parse(newIgnoredErrors.val());
+            } catch (error) {
+                console.error(error);
+                newIgnoredErrors = null;
+            }
+
+            if (newIgnoredErrors) {
+                preferences.set("ignoredErrors", newIgnoredErrors);
+            }
 
             preferences.set("isCaseSensitive", newIsCaseSensitive.prop("checked"));
             preferences.set("maxLineLength", newMaxLineLength.val());
@@ -155,25 +178,28 @@ define(function (require, exports, module) {
             pythonPath: preferences.get("pathToPython"),
             pythonScript: SCRIPT_FULL_PATH
         }).done(function() {
-            pythonDomain.exec("startShell").done(function() {
-                pythonAPI({
-                    "type": "setup",
-                    "settings": {
-                        "is_case_sensitive": preferences.get("isCaseSensitive")
-                    }
-                }).done(function (data) {
-                    if (!data["with_jedi"]) {
-                        internalError(JSON.stringify(data, null, 4));
-                    } else {
+            pythonDomain.exec("startShell")
+                .done(function() {
+                    pythonAPI({
+                        "type": "setup",
+                        "settings": {
+                            "is_case_sensitive": preferences.get("isCaseSensitive")
+                        }
+                    }).done(function (data) {
                         console.log("Established connnection with Python Shell…");
-                    }
-                }).fail(function(error) {
+                    }).fail(function(error) {
+                        internalError(error);
+                    });
+                })
+                .fail(function(error){
                     internalError(error);
                 });
-            });
         });
     }
 
+    /* Show error modal with some help and error content.
+     * @param {string} error error text
+     */
     function internalError (error) {
         Dialogs.showModalDialog(
             "python-tools-error",
@@ -215,7 +241,7 @@ define(function (require, exports, module) {
 
         var menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU);
         menu.addMenuDivider();
-        menu.addMenuItem(SETTINGS_CMD_ID);
+        menu.addMenuItem(SETTINGS_CMD_ID, "Ctrl-Alt-Y");
 
         ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
         ExtensionUtils.loadStyleSheet(module, "styles/docs.less");

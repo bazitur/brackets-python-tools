@@ -34,6 +34,8 @@ Currently available settings:
     If code completion should be case sensitive. Default is `true`.
   - `maxLineLength`: Number
     Maximum line length in Python files. Default: `79`.
+  - `ignoredErrors`: Array
+    Array of errors which should be ignored by Python Linter. Default: `[]`
 
 ### Credits
 This project is based on the [Python Jedi Brackets](https://github.com/saravanan-k90/python-jedi-brackets) project.

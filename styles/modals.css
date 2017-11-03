@@ -1,6 +1,3 @@
-.python-tools-error p.description {
-    font-size: 1.1em;
-}
 .python-tools-error code {
     font-size: 1em;
 }
@@ -8,9 +5,17 @@
     color: inherit;
     background-color: transparent;
 }
-.python-tools-settings input[type=text] {
-    padding: 13px 10px;
+.python-tools-settings label {
+    display: inline;
+    margin-top: 7px;
+}
+
+.python-tools-settings input[type~checkbox] {
+    padding: 13px 5px;
     box-sizing: border-box;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    width: 35%;
 }
 .python-tools-settings .is-cleared-both {
     clear: both;
@@ -20,4 +25,10 @@
 }
 .python-tools-settings .is-floated-right {
     float: right;
+}
+.python-tools-settings .is-monospaced {
+    font-family: monospace;
+}
+.python-tools-settings .properly-padded {
+    padding-top: 5px;
 }
