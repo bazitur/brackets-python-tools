@@ -25,6 +25,7 @@
 
 /* global define, brackets, $, window */
 
+//TODO: ignore flake8 `indentation contains tabs` if Brackets uses tabs
 //TODO: run flake8 from project root, as well as python utils.
 //TODO: fix sphinx' special roles uses in inline documentation - maybe just use Sphinx?
 //TODO: move flake8 to standart API, if it'll ever get API.
