@@ -27,6 +27,10 @@ A set of tools which will make Brackets your favourite backend IDE.
 You can install Python Tools from official Brackets Extension Registry.
 Additionally, you'll need:
   - Python up and running (Python 3 preferably)
+  - `flake8` module (optional) for linting and style checking. You may install it via pip:
+    ```bash
+    ~$ pip install flake8
+    ```
   - `docutils` module (optional) for documentation rendering. It can be install with pip:
     ```bash
     ~$ pip install docutils
@@ -40,7 +44,7 @@ Settings are accessible through standart brackets settings interface or 'File' m
 
 Currently available settings:
   - `pathToPython`: String<br>
-    Full path to python executable. Default value is `python3`.
+    Full path to python executable. Default value is `python`.
   - `isCaseSensitive`: Boolean<br>
     If code completion should be case sensitive. Default is `true`.
   - `maxLineLength`: Number<br>

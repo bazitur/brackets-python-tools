@@ -73,7 +73,7 @@ define(function (require, exports, module) {
 
     var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
 
-    preferences.definePreference("pathToPython", "string", "python3", {
+    preferences.definePreference("pathToPython", "string", "python", {
         description: LocalStrings.PATH_TO_PYTHON_TITLE,
         validator: function (value) {
             return value.trim().length > 0;

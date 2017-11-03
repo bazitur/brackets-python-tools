@@ -2,6 +2,7 @@ define(function (require, exports, module) {
     "use strict";
     module.exports = {
         EXTENSION_NAME: "bazitur.python-tools",
+        HOMEPAGE:       "https://github.com/bazitur/brackets-python-tools",
         ERROR_CODES: ["C901", "E101", "E111", "E112", "E113", "E114",
                       "E115", "E116", "E121", "E122", "E123", "E124",
                       "E125", "E126", "E127", "E128", "E129", "E131",
