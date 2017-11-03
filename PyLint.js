@@ -1,15 +1,20 @@
+/* global define, brackets, $, window */
 define(function (require, exports, module) {
     "use strict";
-    var Type = brackets.getModule("language/CodeInspection").Type,
-        getCurrentDocument = brackets.getModule("document/DocumentManager").getCurrentDocument;
+    var EXTENSION_NAME = require("constants").EXTENSION_NAME;
 
-    var pythonDomain,
-        pythonPath,
-        flake8Available = true;
+    var Type               = brackets.getModule("language/CodeInspection").Type,
+        getCurrentDocument = brackets.getModule("document/DocumentManager").getCurrentDocument,
+        PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
+
+        preferences = PreferencesManager.getExtensionPrefs(EXTENSION_NAME);
+
+    var pythonDomain, flake8Available = true;
+
 
     var WITH_GUTTERS = new Boolean(window.bracketsInspectionGutters);
     if (!WITH_GUTTERS)
-        console.warn('No bracketsInspectionGutters found on window, gutters disabled.');
+        console.warn('No bracketsInspectionGutters found in window, gutters disabled.');
 
     function _getErrorSeverity (errorCode) {
         if (["E121", "E123", "E126", "E133", "E226",
@@ -21,9 +26,8 @@ define(function (require, exports, module) {
             return Type.WARNING;
     }
 
-    function PyLint(pyDomain, pyPath) {
+    function PyLint(pyDomain) {
         pythonDomain = pyDomain;
-        pythonPath = pyPath;
     }
 
     PyLint.prototype.scanFileAsync = function(text, fullPath) {
@@ -35,7 +39,10 @@ define(function (require, exports, module) {
         }
 
         var result = new $.Deferred();
-        pythonDomain.exec("Flake8", pythonPath, fullPath)
+        pythonDomain.exec("Flake8",
+                          preferences.get("pathToPython"),
+                          fullPath,
+                          preferences.get("maxLineLength"))
             .done(function (data) {
 
                 var report = {

@@ -5,11 +5,19 @@
   <div class="modal-body">
 
     <div class="form-group">
-      <label for="pathToPython">{{ PATH_TO_PYTHON_TITLE }}</label>
-      <input type="text" id="pathToPython" value="{{ pathToPython }}">
+      <label for="pathToPython" class="is-floated-left">{{ PATH_TO_PYTHON_TITLE }}</label>
+      <input type="text" id="pathToPython" value="{{ pathToPython }}" class="is-floated-right">
     </div>
 
-    <div class="form-group">
+    <div class="form-group is-cleared-both">
+      <label for="maxLineLength" class="is-floated-left">{{ MAX_LINE_LENGTH_TITLE }}</label>
+      <input type="number" id="maxLineLength"
+             value="{{ maxLineLength }}"
+             min="70" max="300"
+             class="is-floated-right">
+    </div>
+
+    <div class="form-group is-cleared-both">
       <label for="isCaseSensitive">
         <input type="checkbox" id="isCaseSensitive" {{# isCaseSensitive }} checked{{/ isCaseSensitive }}>
         {{ IS_CASE_SENSITIVE_TITLE }}

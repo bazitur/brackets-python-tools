@@ -37,6 +37,7 @@
             console.error("Unhandled error: %s", error);
         }
     };
+
     PythonShell.prototype.handleClose = function (code) {
         if (code === 0 && this.callBack)
             this.callBack(null, true);
@@ -46,7 +47,7 @@
     };
 
     PythonShell.prototype.start = function (callBack) {
-        if (this.needsRestart) {
+        if (this.process) {
             this.process.kill();
             this.needsRestart = false;
         }
@@ -61,9 +62,10 @@
 
     var pyShell = new PythonShell(null, null);
 
-    function cmdFlake8(pyPath, fileName, callBack) {
+    function cmdFlake8(pyPath, fileName, lineLength, callBack) {
         var result = [], stderr = '';
         var args = ['-m', 'flake8', '--exit-zero',
+                    '--max-line-length='+lineLength.toString(),
                     '--format=%(row)d||%(col)d||%(code)s||%(text)s', fileName];
         var flake8 = spawn(pyPath, args);
 

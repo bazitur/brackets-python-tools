@@ -95,10 +95,10 @@ class PythonTools:
         if not WITH_JEDI:
             raise PythonToolsError("Jedi unawailable")
         return jedi.api.Script(
-            source = request["source"],
-            line   = request["line"] + 1, # Jedi starts line count with 1
-            column = request["column"],
-            path   = request["path"]
+            source=request["source"],
+            line=request["line"] + 1,       # Jedi starts line count with 1
+            column=request["column"],
+            path=request["path"]
         )
 
     def setup(self, request):

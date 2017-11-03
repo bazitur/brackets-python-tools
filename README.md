@@ -1,14 +1,14 @@
-# brackets-python-tools: Easy Python development with Brackets
+## brackets-python-tools: Easy Python development with Brackets
 
 A set of tools which will make Brackets your favourite backend IDE.
 
-## Features
+### Features
   - Smart autocompletion
   - Go to definition/assignment
   - Inline Python documentation
   - Linter
 
-## Installation
+### Installation
 You can install Python Tools from official Brackets Extension Registry.
 Additionally, you'll need:
   - Python up and running (Python 3 preferably)
@@ -21,10 +21,10 @@ Additionally, you'll need:
     ~$ pip install docutils
     ```
 
-## Usage
+### Usage
 This Extension uses Python 3 interpreter in your path by default. You can customize interpreter either in Preferences File or in Python Tools Settings tab.
 
-## Settings
+### Settings
 Settings are accessible through standart brackets settings interface or 'File' menu 🡒 Python Tools Settings.
 
 Currently available settings:
@@ -32,9 +32,11 @@ Currently available settings:
     Full path to python executable. Default value is `python3`.
   - `isCaseSensitive`: Boolean
     If code completion should be case sensitive. Default is `true`.
+  - `maxLineLength`: Number
+    Maximum line length in Python files. Default: `79`.
 
-## Credits
-This project uses the [Python Jedi Project](https://github.com/saravanan-k90/python-jedi-brackets).
+### Credits
+This project is based on the [Python Jedi Brackets](https://github.com/saravanan-k90/python-jedi-brackets) project.
 
-## License
-The source code is licensed MIT. See LICENSE.md for more.
+### License
+The source code is licensed MIT. See [LICENSE.md] for more.

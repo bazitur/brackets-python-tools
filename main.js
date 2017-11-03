@@ -27,12 +27,13 @@
 
 
 //TODO: fix sphinx' special roles uses in inline documentation - maybe just use Sphinx?
+//TODO: move flake8 to standart API, if it'll ever get API.
 //TODO: add terminal?
 
 define(function (require, exports, module) {
     "use strict";
 
-    var EXTENSION_NAME = "bazitur.python-tools";
+    var EXTENSION_NAME = require("constants").EXTENSION_NAME;
 
     var AppInit            = brackets.getModule("utils/AppInit"),
 
@@ -68,10 +69,19 @@ define(function (require, exports, module) {
     var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
 
     preferences.definePreference("pathToPython", "string", "python3", {
-        description: "Path to Python executable" //TODO: replace with Strings
+        description: LocalStrings.PATH_TO_PYTHON_TITLE,
+        validator: function (value) {
+            return value.trim().length > 0;
+        }
     });
     preferences.definePreference("isCaseSensitive", "boolean", true, {
-        description: "Use case sensitive completion" //TODO: +Strings
+        description: LocalStrings.IS_CASE_SENSITIVE_TITLE
+    });
+    preferences.definePreference("maxLineLength", "number", 79, {
+        description: LocalStrings.MAX_LINE_LENGTH_TITLE,
+        validator: function (value) {
+            return 70 <= value && value <= 300;
+        }
     });
 
     var pathToPython = preferences.get("pathToPython");
@@ -107,29 +117,35 @@ define(function (require, exports, module) {
             PYTHON_TOOLS_SETTINGS_TITLE: LocalStrings.PYTHON_TOOLS_SETTINGS_TITLE,
             PATH_TO_PYTHON_TITLE:        LocalStrings.PATH_TO_PYTHON_TITLE,
             IS_CASE_SENSITIVE_TITLE:     LocalStrings.IS_CASE_SENSITIVE_TITLE,
+            MAX_LINE_LENGTH_TITLE:       LocalStrings.MAX_LINE_LENGTH_TITLE,
             SETTINGS_NOTE:               LocalStrings.SETTINGS_NOTE,
             BUTTON_CANCEL:               CoreStrings.CANCEL,
             BUTTON_SAVE:                 CoreStrings.SAVE,
 
-            pathToPython: preferences.get("pathToPython"),
-            isCaseSensitive: preferences.get("isCaseSensitive")
+            pathToPython:    preferences.get("pathToPython"),
+            isCaseSensitive: preferences.get("isCaseSensitive"),
+            maxLineLength:   preferences.get("maxLineLength")
         });
         var dialog = Dialogs.showModalDialogUsingTemplate(renderedTemplate, false);
         var getDialogElements = dialog.getElement();
         var cancelButton =  getDialogElements.find('#cancel-button');
         var okButton = getDialogElements.find('#ok-button');
-        var newPathToPython = getDialogElements.find('#pathToPython');
-        var newIsCaseSensitive = getDialogElements.find('#isCaseSensitive');
+
+        var newPathToPython =    getDialogElements.find('#pathToPython'),
+            newIsCaseSensitive = getDialogElements.find('#isCaseSensitive'),
+            newMaxLineLength =   getDialogElements.find("#maxLineLength");
+
         cancelButton.click(function () {
             dialog.close();
         });
         okButton.click(function () {
             dialog.close();
             newPathToPython = newPathToPython.val().trim();
-            if (newPathToPython) {
-                preferences.set('pathToPython', newPathToPython);
-            }
+            if (newPathToPython) preferences.set('pathToPython', newPathToPython);
+
             preferences.set("isCaseSensitive", newIsCaseSensitive.prop("checked"));
+            preferences.set("maxLineLength", newMaxLineLength.val());
+
             preferences.save();
         });
     }

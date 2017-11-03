@@ -10,6 +10,14 @@
 }
 .python-tools-settings input[type=text] {
     padding: 13px 10px;
-    width: 100%;
     box-sizing: border-box;
+}
+.python-tools-settings .is-cleared-both {
+    clear: both;
+}
+.python-tools-settings .is-floated-left {
+    float: left;
+}
+.python-tools-settings .is-floated-right {
+    float: right;
 }
