@@ -2,7 +2,7 @@
 (function() {
     "use strict";
     var spawn = require("child_process").spawn;
-
+    var pythonDirectory;
     /*
      * @constructor
      */
@@ -24,6 +24,7 @@
     PythonShell.prototype.setSettings = function (settings, callBack) {
         this.pythonPath = settings.pythonPath;
         this.pythonScript = settings.pythonScript;
+        pythonDirectory = settings.pythonDirectory;
         callBack(null, "");
     };
 
@@ -62,7 +63,8 @@
         }
 
         this.process = spawn(this.pythonPath, ["-u", this.pythonScript], {
-            windowsHide: true
+            windowsHide: true,
+            cwd: pythonDirectory
         });
         this.process.on("error", function () {
             callBack(null, "Error spawning process");
@@ -88,7 +90,11 @@
         if (ignoredErrors.length > 0)
             args.push('--ignore='+ignoredErrors.join(','));
         args.push(fileName);
-        var flake8 = spawn(pyPath, args);
+
+        var flake8 = spawn(pyPath, args, {
+            windowsHide: true,
+            cwd: pythonDirectory
+        });
 
         flake8.stdout.on('data', function (data) {
             data = data.toString();

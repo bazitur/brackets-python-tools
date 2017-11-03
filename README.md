@@ -27,11 +27,7 @@ A set of tools which will make Brackets your favourite backend IDE.
 You can install Python Tools from official Brackets Extension Registry.
 Additionally, you'll need:
   - Python up and running (Python 3 preferably)
-  - `jedi` and `flake8` python modules installed. You can install them via pip:
-    ```bash
-    ~$ pip install jedi flake8
-    ```
-  - `docutils` module (optional) for documentation rendering. It can be install with pip as well:
+  - `docutils` module (optional) for documentation rendering. It can be install with pip:
     ```bash
     ~$ pip install docutils
     ```

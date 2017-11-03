@@ -24,16 +24,18 @@
 from json import loads, dumps
 import sys
 from traceback import format_tb
+
 try:
     from tinyhtmlwriter import format_docs
     WITH_DOCUTILS = True
-except:
+except ImportError:
     WITH_DOCUTILS = False
+
 try:
     import jedi # noqa
     sys.path.pop(0)  # remove jedi from completion
     WITH_JEDI = True
-except:
+except ImportError:
     WITH_JEDI = False
 
 
@@ -82,6 +84,7 @@ class PythonTools:
                     "content": processor(request)
                 }
         except Exception as E:
+            import os
             return {
                 "status": "ERROR",
                 "error": {

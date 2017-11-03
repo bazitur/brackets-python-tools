@@ -69,6 +69,7 @@ define(function (require, exports, module) {
         PyGoto  = require("PyGoto");
 
     var SCRIPT_FULL_PATH = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
+    var PYTHON_DIRECTORY = ExtensionUtils.getModulePath(module, 'pythonfiles/');
 
     var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
 
@@ -177,7 +178,8 @@ define(function (require, exports, module) {
     function setUpPythonShell () {
         pythonDomain.exec("setSettings", {
             pythonPath: preferences.get("pathToPython"),
-            pythonScript: SCRIPT_FULL_PATH
+            pythonScript: SCRIPT_FULL_PATH,
+            pythonDirectory: PYTHON_DIRECTORY
         }).done(function() {
             pythonDomain.exec("startShell")
                 .done(function() {
