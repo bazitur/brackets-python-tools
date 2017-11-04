@@ -22,21 +22,23 @@
 # SOFTWARE.
 
 from json import loads, dumps
-import sys
+import os, sys
 from traceback import format_tb
+
+WORKING_DIR = os.getcwd()
+sys.path.append(os.path.join(WORKING_DIR, "jedi.zip"))
+
+try:
+    import jedi # noqa
+    WITH_JEDI = True
+except ImportError:
+    WITH_JEDI = False
 
 try:
     from tinyhtmlwriter import format_docs
     WITH_DOCUTILS = True
 except ImportError:
     WITH_DOCUTILS = False
-
-try:
-    import jedi # noqa
-    sys.path.pop(0)  # remove jedi from completion
-    WITH_JEDI = True
-except ImportError:
-    WITH_JEDI = False
 
 
 class PythonToolsError(Exception):
@@ -84,7 +86,6 @@ class PythonTools:
                     "content": processor(request)
                 }
         except Exception as E:
-            import os
             return {
                 "status": "ERROR",
                 "error": {

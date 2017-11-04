@@ -108,8 +108,12 @@ define(function (require, exports, module) {
                 if (data.status === "OK")
                     deferred.resolve(data.content);
                 else if (data.status === "ERROR") {
-                    console.error("Non-critical error in Python Domain");
-                    console.error(JSON.stringify(data.error, null, 4));
+                    console.error(
+                        "Non-critical error in Python Domain:\n" +
+                        data.error.traceback.join("") +
+                        data.error.name + ": " +
+                        data.error.value
+                    );
                     deferred.reject(data.content);
                 }
             })
@@ -208,7 +212,9 @@ define(function (require, exports, module) {
             "python-tools-error",
             LocalStrings.ERROR_TITLE,
             Mustache.render(errorTemplate, {
-                ERROR_NOTICE: LocalStrings.ERROR_NOTICE,
+                ERROR_NOTICE: Mustache.render(LocalStrings.ERROR_NOTICE, {
+                    HOMEPAGE_REF: CONSTANTS.HOMEPAGE
+                }),
                 ERROR_TEXT:   LocalStrings.ERROR_TEXT,
 
                 error: error

@@ -6,5 +6,5 @@ define({
     IGNORED_ERRORS_TITLE:        "Array of errors which should be ignored by Python Linter",
     ERROR_TITLE:                 "Python Tools Error",
     ERROR_TEXT:                  "Error text",
-    ERROR_NOTICE:                "Python Tools requires python shell and <code>jedi</code> module to work. Make sure you've provided correct path for Python executable and installed <code>jedi</code>."
+    ERROR_NOTICE:                "Python Tools requires python shell and <code>jedi</code> module to work. Make sure you've provided correct path for Python executable and installed <code>jedi</code>. See <a href='{{ HOMEPAGE_REF }}'>Project home</a> for support."
 });
