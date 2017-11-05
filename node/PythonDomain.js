@@ -29,8 +29,15 @@
     };
 
     PythonShell.prototype.handleData = function (buffer) {
+        var data;
+        try {
+            data = JSON.parse(buffer.toString());
+        } catch (error) {
+            data = null;
+            var err = error;
+        }
         if (this.callBack) {
-            this.callBack(null, JSON.parse(buffer.toString()));
+            data !== null? this.callBack(null, data) : this.callBack(err, null);
         } else {
             console.error("Unhandled data");
         }
@@ -39,6 +46,8 @@
     PythonShell.prototype.handleError = function (errorBuffer) {
         var error = errorBuffer.toString();
         // should not restart the process there, may continue infinitely
+        this.needsRestart = true;
+
         if (this.callBack) {
             this.callBack(error, null);
         } else {
@@ -57,7 +66,10 @@
     };
 
     PythonShell.prototype.start = function (callBack) {
-        if (this.process) {
+        if (this.process && this.process.connected
+            && (!this.process.killed) && (!this.needsRestart)) {
+            callBack(null, true);   // cache normal process
+        } else if (this.process) {
             this.process.kill();
             this.needsRestart = false;
         }

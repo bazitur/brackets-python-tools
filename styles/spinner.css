@@ -1,21 +1,32 @@
-.spinner {
-  height: 25px;
-  width: 25px;
-  margin: 94px auto 0 auto;
-  position: relative;
-  -webkit-animation: rotation .6s infinite linear;
-  border-left: 6px solid rgba(0, 174, 239, .15);
-  border-right: 6px solid rgba(0, 174, 239, .15);
-  border-bottom: 6px solid rgba(0, 174, 239, .15);
-  border-top: 6px solid rgba(0, 174, 239, .8);
-  border-radius: 100%;
+#python-tools-status {
+  width: 6px;
+  height: 24px;
+  background-position: center center !important;
+  border-left: none !important;
+  cursor: pointer;
+}
+#python-tools-status.loading {
+  background: url(../icons/gear.svg) no-repeat;
+  animation: spinAround 2s infinite linear;
+}
+#python-tools-status.connected {
+  background: url(../icons/python-logo.svg) no-repeat;
+}
+#python-tools-status.error {
+  background: url(../icons/denied.svg) no-repeat;
 }
 
-@-webkit-keyframes rotation {
+@keyframes spinAround {
   from {
-    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
   }
   to {
-    -webkit-transform: rotate(359deg);
+    transform: rotate(359deg);
   }
+}
+
+#python-tools-status-dummy {
+  padding: 0 !important;
+  margin: 0;
+  height: 24px;
 }

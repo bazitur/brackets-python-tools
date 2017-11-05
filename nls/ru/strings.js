@@ -6,5 +6,8 @@ define({
     IGNORED_ERRORS_TITLE:        "Массив ошибок, игнорируемых Линтером Python",
     ERROR_TITLE:                 "Ошибка инструментов Python",
     ERROR_TEXT:                  "Текст ошибки",
-    ERROR_NOTICE:                "Для нормальной работы инструментов Python требуется работающий Python и модуль <code>jedi</code>. Убедитесь, что в настройках указан правильный путь к интерпретатору Python и установлен модуль <code>jedi</code>. Вы можете найти помощь на <a href='{{ HOMEPAGE_REF }}'>сайте проекта</a>."
+    ERROR_NOTICE:                "Для нормальной работы инструментов Python требуется работающий Python и модуль <code>jedi</code>. Убедитесь, что в настройках указан правильный путь к интерпретатору Python и установлен модуль <code>jedi</code>. Вы можете найти помощь на <a href='{{ HOMEPAGE_REF }}'>сайте проекта</a>.",
+    SHELL_CONNECTING:           "Подключение к оболочке Python…",
+    SHELL_CONNECTED:            "Подключён к оболочке Python",
+    SHELL_ERROR:                "Ошибка в оболочке Python"
 });

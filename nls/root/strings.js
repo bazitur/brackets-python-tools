@@ -3,8 +3,11 @@ define({
     PATH_TO_PYTHON_TITLE:        "Path to Python executable",
     IS_CASE_SENSITIVE_TITLE:     "Use case sensitive completion",
     MAX_LINE_LENGTH_TITLE:       "Maximum line length in Python files",
-    IGNORED_ERRORS_TITLE:        "Array of errors which should be ignored by Python Linter",
+    IGNORED_ERRORS_TITLE:        "Array of errors ignored by Python Linter",
     ERROR_TITLE:                 "Python Tools Error",
     ERROR_TEXT:                  "Error text",
-    ERROR_NOTICE:                "Python Tools requires python shell and <code>jedi</code> module to work. Make sure you've provided correct path for Python executable and installed <code>jedi</code>. See <a href='{{ HOMEPAGE_REF }}'>Project home</a> for support."
+    ERROR_NOTICE:                "Python Tools requires python shell and <code>jedi</code> module to work. Make sure you've provided correct path for Python executable and installed <code>jedi</code>. See <a href='{{ HOMEPAGE_REF }}'>Project home</a> for support.",
+    SHELL_CONNECTING:           "Connecting to Python shell…",
+    SHELL_CONNECTED:            "Connected to Python shell",
+    SHELL_ERROR:                "Error in Python shell"
 });

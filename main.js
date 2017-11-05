@@ -63,15 +63,18 @@ define(function (require, exports, module) {
 
     var SETTINGS_CMD_ID  = EXTENSION_NAME + ".settings";
     
-    var PyHints = require("PyHints"),
-        PyDocs  = require("PyDocs"),
-        PyLint  = require("PyLint"),
-        PyGoto  = require("PyGoto");
+    var PyHints  = require("PyHints"),
+        PyDocs   = require("PyDocs"),
+        PyLint   = require("PyLint"),
+        PyGoto   = require("PyGoto"),
+        PyStatus = require("PyStatus");
 
     var SCRIPT_FULL_PATH = ExtensionUtils.getModulePath(module, 'pythonfiles/python_utils.py');
     var PYTHON_DIRECTORY = ExtensionUtils.getModulePath(module, 'pythonfiles/');
 
     var pythonDomain = new NodeDomain("python-tools", ExtensionUtils.getModulePath(module, "node/PythonDomain"));
+
+    var status = new PyStatus(handleSettings);
 
     preferences.definePreference("pathToPython", "string", "python", {
         description: LocalStrings.PATH_TO_PYTHON_TITLE,
@@ -180,6 +183,7 @@ define(function (require, exports, module) {
     }
     
     function setUpPythonShell () {
+        status.update("loading", LocalStrings.SHELL_CONNECTING);
         pythonDomain.exec("setSettings", {
             pythonPath: preferences.get("pathToPython"),
             pythonScript: SCRIPT_FULL_PATH,
@@ -193,7 +197,7 @@ define(function (require, exports, module) {
                             "is_case_sensitive": preferences.get("isCaseSensitive")
                         }
                     }).done(function (data) {
-                        console.log("Established connnection with Python Shell…");
+                        status.update("connected", LocalStrings.SHELL_CONNECTED);
                     }).fail(function(error) {
                         internalError(error);
                     });
@@ -208,6 +212,7 @@ define(function (require, exports, module) {
      * @param {string} error error text
      */
     function internalError (error) {
+        status.update("error", LocalStrings.SHELL_ERROR);
         Dialogs.showModalDialog(
             "python-tools-error",
             LocalStrings.ERROR_TITLE,
@@ -230,7 +235,6 @@ define(function (require, exports, module) {
             python_goto  = new PyGoto(pythonAPI).goto;
         // NOTICE: EditorManager requires jump to definition provider to be a function.
         // Thus, passing method to EditorManager.
-
         CodeHintManager.registerHintProvider(python_hints, ["python"], 9);
         EditorManager.registerInlineDocsProvider(python_docs);
         EditorManager.registerJumpToDefProvider(python_goto);
@@ -252,8 +256,11 @@ define(function (require, exports, module) {
         menu.addMenuDivider();
         menu.addMenuItem(SETTINGS_CMD_ID, "Ctrl-Alt-Y");
 
-        ExtensionUtils.loadStyleSheet(module, "styles/hints.less");
-        ExtensionUtils.loadStyleSheet(module, "styles/docs.less");
-        ExtensionUtils.loadStyleSheet(module, "styles/modals.css");
+        ["hints.less",
+         "docs.less",
+         "modals.css",
+         "spinner.css"].forEach(function (stylesheet) {
+            ExtensionUtils.loadStyleSheet(module, "styles/" + stylesheet);
+        });
     });
 });
