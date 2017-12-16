@@ -12,7 +12,7 @@ define(function (require, exports, module) {
     var pythonDomain, flake8Available = true;
 
 
-    var WITH_GUTTERS = new Boolean(window.bracketsInspectionGutters);
+    var WITH_GUTTERS = window.bracketsInspectionGutters;
     if (!WITH_GUTTERS)
         console.warn('No bracketsInspectionGutters found in window, gutters disabled.');
 

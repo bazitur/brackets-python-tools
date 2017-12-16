@@ -3,6 +3,7 @@
     "use strict";
     var spawn = require("child_process").spawn;
     var pythonDirectory;
+
     /*
      * @constructor
      */
@@ -56,20 +57,17 @@
     };
 
     PythonShell.prototype.handleClose = function (code) {
+        this.needsRestart = true;
         if (this.callBack) {
             if (code === 0)
                 this.callBack(null, true);
             else
                 this.callBack(null, code);
         }
-        this.needsRestart = true;
     };
 
     PythonShell.prototype.start = function (callBack) {
-        if (this.process && this.process.connected
-            && (!this.process.killed) && (!this.needsRestart)) {
-            callBack(null, true);   // cache normal process
-        } else if (this.process) {
+        if (this.process) {
             this.process.kill();
             this.needsRestart = false;
         }

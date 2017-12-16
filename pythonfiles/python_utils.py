@@ -22,7 +22,8 @@
 # SOFTWARE.
 
 from json import loads, dumps
-import os, sys
+import os
+import sys
 from traceback import format_tb
 
 WORKING_DIR = os.getcwd()
@@ -34,11 +35,14 @@ try:
 except ImportError:
     WITH_JEDI = False
 
-try:
-    from tinyhtmlwriter import format_docs
-    WITH_DOCUTILS = True
-except ImportError:
-    WITH_DOCUTILS = False
+# try:
+#     from tinyhtmlwriter import format_docs
+#     WITH_DOCUTILS = True
+# except ImportError:
+#     WITH_DOCUTILS = False
+# TODO: move docs styling back!
+
+WITH_DOCUTILS = False
 
 
 class PythonToolsError(Exception):
