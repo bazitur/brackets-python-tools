@@ -1,4 +1,4 @@
-## brackets-python-tools: Python development with Brackets
+## brackets-python-tools: Python development with Brackets [![Downloads](https://badges.ml/bazitur.python-tools/total.svg)](https://brackets-extension-badges.github.io#bazitur.python-tools) [![Version](https://badges.ml/bazitur.python-tools/version.svg)](https://brackets-extension-badges.github.io#bazitur.python-tools)
 
 A set of tools which will make Brackets your favourite backend IDE.
 
@@ -31,7 +31,7 @@ Additionally, you'll need:
     ```bash
     ~$ pip install flake8
     ```
-  - `docutils` module (optional) for documentation rendering. It can be install with pip:
+  - `docutils` module (optional) for documentation rendering. It can be installed with pip:
     ```bash
     ~$ pip install docutils
     ```
