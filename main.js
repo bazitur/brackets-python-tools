@@ -42,7 +42,7 @@ define(function (require, exports, module) {
     var AppInit            = brackets.getModule("utils/AppInit"),
 
         EditorManager      = brackets.getModule("editor/EditorManager"),
-        DocumentManager    = brackets.getModule("document/DocumentManager"),
+        //DocumentManager    = brackets.getModule("document/DocumentManager"),
         CodeHintManager    = brackets.getModule("editor/CodeHintManager"),
         PreferencesManager = brackets.getModule("preferences/PreferencesManager"),
         CommandManager     = brackets.getModule("command/CommandManager"),
@@ -165,13 +165,16 @@ define(function (require, exports, module) {
             if (newPathToPython) preferences.set('pathToPython', newPathToPython);
 
             try {
-                newIgnoredErrors = JSON.parse(newIgnoredErrors.val());
+                if (newIgnoredErrors.val().trim().length > 0)
+                    newIgnoredErrors = JSON.parse(newIgnoredErrors.val());
+                else
+                    newIgnoredErrors = [];
             } catch (error) {
                 console.error(error);
                 newIgnoredErrors = null;
             }
 
-            if (newIgnoredErrors) {
+            if (newIgnoredErrors !== null) {
                 preferences.set("ignoredErrors", newIgnoredErrors);
             }
 

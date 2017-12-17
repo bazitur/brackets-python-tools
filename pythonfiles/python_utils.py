@@ -24,10 +24,14 @@
 from json import loads, dumps
 import os
 import sys
+import re
 from traceback import format_tb
 
 WORKING_DIR = os.getcwd()
 sys.path.append(os.path.join(WORKING_DIR, "jedi.zip"))
+
+TRIM_REGEX = r"(^[=*]+|[=*]+$)"
+TRIM_REGEX = re.compile(TRIM_REGEX)
 
 try:
     import jedi # noqa
@@ -141,6 +145,9 @@ class PythonTools:
         # TODO: sort completions here!
         return completions
 
+    def format_title(self, title):
+        return TRIM_REGEX.sub("", title)
+
     def get_documentation(self, request):
         script = self._script_from_request(request)
 
@@ -159,16 +166,16 @@ class PythonTools:
                 title, body = docstring.split("\n\n", maxsplit=1)
                 if body.strip():
                     if WITH_DOCUTILS:
-                        try:
-                            docs = format_docs(body)
-                            response["formatted"] = True
-                        except:
-                            docs = body
+                        docs = body
+#                        try:
+#                            docs = format_docs(body)
+#                            response["formatted"] = True
+#                        except:
+#                            docs = body
                     else:
                         docs = body
                     response["docs"] = docs
-                    response["title"] = title
-
+                    response["title"] = self.format_title(title)
         return response
 
     def goto_definition(self, request):

@@ -1,4 +1,4 @@
 __pycache__/
 docutils/
-test.py
+test*.py
 *.pyc
