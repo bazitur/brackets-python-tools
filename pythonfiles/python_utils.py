@@ -22,13 +22,22 @@
 # SOFTWARE.
 
 from json import loads, dumps
-import os
 import sys
 import re
 from traceback import format_tb
 
-WORKING_DIR = os.getcwd()
-sys.path.append(os.path.join(WORKING_DIR, "jedi.zip"))
+PY2 = sys.version_info.major == 2
+
+if PY2:
+    from string import split
+
+
+def split_docstring(string):
+    if PY2:
+        return split(string, "\n\n", maxsplit=1)
+    else:
+        return string.split("\n\n", maxsplit=1)
+
 
 TRIM_REGEX = r"(^[=*]+|[=*]+$)"
 TRIM_REGEX = re.compile(TRIM_REGEX)
@@ -163,7 +172,7 @@ class PythonTools:
             completion = completions[0]
             docstring = completion.docstring(raw=False, fast=False)
             if "\n\n" in docstring:
-                title, body = docstring.split("\n\n", maxsplit=1)
+                title, body = split_docstring(docstring)
                 if body.strip():
                     if WITH_DOCUTILS:
                         docs = body
